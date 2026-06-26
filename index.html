@@ -135,6 +135,12 @@ body.dark-mode .nuage-container { background: rgba(0,0,0,0.4); border-color: rgb
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     animation: gradientMove 4s linear infinite;
 }
+.bienvenue-titre .anim-lettre {
+    background: inherit;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 @keyframes gradientMove { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
 #accueil h2 { font-size: 3rem; font-weight: 700; margin-bottom: 20px; font-family: 'Playfair Display', serif; color: var(--color-dark); }
 .sous-titre { font-size: 1.3rem; color: #555; margin-top: 10px; font-weight: 400; letter-spacing: 1px; min-height: 2rem; }
@@ -658,9 +664,180 @@ body.dark-mode .translate-option { color: white; }
     opacity: 0.8;
     padding: 3px 0;
 }
+/* ======= ANIMATIONS AU SCROLL ======= */
+.reveal {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+.reveal-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+.reveal-right {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ======= CARTE FLIP ======= */
+.projet-flip-container {
+    perspective: 1000px;
+    height: 380px;
+}
+.projet-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+    transform-style: preserve-3d;
+}
+.projet-flip-container.flipped .projet-flip-inner {
+    transform: rotateY(180deg);
+}
+.projet-flip-front,
+.projet-flip-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 15px;
+    overflow: hidden;
+}
+.projet-flip-front {
+    background: white;
+    border: 1px solid #eee;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.projet-flip-back {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+    color: white;
+    text-align: center;
+}
+.projet-flip-back h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: white;
+}
+.projet-flip-back p {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    color: rgba(255,255,255,0.9);
+}
+.projet-flip-back .flip-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.projet-flip-back .flip-badge {
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.5);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+}
+.projet-flip-back .flip-btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.btn-flip-voir {
+    background: white;
+    color: var(--color-primary);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+.btn-flip-voir:hover {
+    background: var(--color-dark);
+    color: white;
+    transform: translateY(-3px);
+}
+.btn-flip-retour {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn-flip-retour:hover {
+    background: white;
+    color: var(--color-primary);
+    transform: translateY(-3px);
+}
+body.dark-mode .projet-flip-front {
+    background: #111111;
+    border-color: #333;
+}
+/* ======= ANIMATIONS AU SCROLL ======= */
+.reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ======= ANIMATION TEXTE ACCUEIL ======= */
+.anim-lettre {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: apparaitreLettre 0.05s ease forwards;
+}
+@keyframes apparaitreLettre {
+    to { opacity: 1; transform: translateY(0); }
+}
+.anim-mot {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(15px);
+    animation: apparaitreMot 0.4s ease forwards;
+}
+@keyframes apparaitreMot {
+    to { opacity: 1; transform: translateY(0); }
+}
     </style>
 </head>
-<>
+<body></body>
+
 <div id="cursor"></div>
 <div id="cursor-follower"></div>
 
@@ -687,20 +864,6 @@ body.dark-mode .translate-option { color: white; }
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link active" href="#accueil">Accueil</a></li>
-                <li class="nav-item"><a class="nav-link" href="#a-propos">À propos</a></li>
-                <li class="nav-item"><a class="nav-link" href="#projets">Projets</a></li>
-                <li class="nav-item"><a class="nav-link" href="#competences">Compétences</a></li>
-                <li class="nav-item"><a class="nav-link" href="#experience">Expériences</a></li>
-                <li class="nav-item"><a class="nav-link" href="#centres-interet">Centres d'intérêt</a></li>
-                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-                <li class="nav-item">
-                    <button id="themeToggleBtn" class="btn-theme-navbar" title="Changer le thème">
-                        <i class="fas fa-moon"></i>
-                    </button>
-    
                 </li>
             </ul>
         </div>
@@ -843,7 +1006,7 @@ body.dark-mode .translate-option { color: white; }
 </section>
 
 <!-- PROJETS -->
-<section id="projets" class="section-page py-5">
+<section id="projets" class="section-page py-5 reveal">
     <div class="container">
         <h2 class="text-center mb-5 titre-section"><i class="fas fa-globe-africa me-2"></i> Mes Projets</h2>
         <div class="row" id="projets-container"></div>
@@ -876,11 +1039,11 @@ body.dark-mode .translate-option { color: white; }
 </div>
 
 <!-- COMPÉTENCES -->
-<section id="competences" class="section-page py-5">
+<section id="competences" class="section-page py-5 reveal">
     <div class="container">
         <h2 class="text-center mb-5 titre-section"><i class="fas fa-code me-2"></i> Compétences Techniques</h2>
         <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 reveal">
                 <div class="competence-card">
                     <div class="competence-header"><i class="fas fa-map-marked-alt"></i><span class="competence-nom">Topographie / Dessin & Conception</span></div>
                     <div class="competence-list">
@@ -889,7 +1052,7 @@ body.dark-mode .translate-option { color: white; }
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 reveal">
                 <div class="competence-card">
                     <div class="competence-header"><i class="fas fa-map-marked-alt"></i><span class="competence-nom">Bases des outils topographiques</span></div>
                     <div class="competence-list">
@@ -898,7 +1061,7 @@ body.dark-mode .translate-option { color: white; }
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 reveal">
                 <div class="competence-card">
                     <div class="competence-header"><i class="fas fa-draw-polygon"></i><span class="competence-nom">Cartographie</span></div>
                     <div class="competence-list">
@@ -908,7 +1071,7 @@ body.dark-mode .translate-option { color: white; }
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 reveal">
                 <div class="competence-card">
                     <div class="competence-header"><i class="fas fa-camera"></i><span class="competence-nom">Photogrammétrie & Télédétection</span></div>
                     <div class="competence-list">
@@ -918,7 +1081,7 @@ body.dark-mode .translate-option { color: white; }
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 reveal">
                 <div class="competence-card">
                     <div class="competence-header"><i class="fab fa-python"></i><span class="competence-nom">Programmation & Base de données</span></div>
                     <div class="competence-list">
@@ -928,7 +1091,7 @@ body.dark-mode .translate-option { color: white; }
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 reveal">
                 <div class="competence-card">
                     <div class="competence-header"><i class="fab fa-html5"></i><span class="competence-nom">Développement web</span></div>
                     <div class="competence-list">
@@ -939,7 +1102,7 @@ body.dark-mode .translate-option { color: white; }
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4 reveal">
                 <div class="competence-card">
                     <div class="competence-header"><i class="fas fa-file-alt"></i><span class="competence-nom">Bureautique</span></div>
                     <div class="competence-list">
@@ -954,25 +1117,25 @@ body.dark-mode .translate-option { color: white; }
 </section>
 
 <!-- EXPÉRIENCES -->
-<section id="experience" class="section-page py-5">
+<section id="experience" class="section-page py-5 reveal">
     <div class="container">
         <h2 class="text-center mb-5 titre-section"><i class="fas fa-graduation-cap me-2"></i> Expériences</h2>
         <h3 class="text-center mb-4" style="color:#1abc9c;"><i class="fas fa-university me-2"></i> Expériences académiques</h3>
         <div class="row g-4">
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-map"></i></div><h3 class="exp-titre">Cartographie thématique</h3><p class="exp-description">Réalisation de cartes thématiques avec QGIS et ArcGIS pour analyser des phénomènes spatiaux.</p><div class="exp-badges"><span class="exp-badge">QGIS</span><span class="exp-badge">ArcGIS</span><span class="exp-badge">Mise en page </span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-satellite"></i></div><h3 class="exp-titre">Traitement d'images satellites</h3><p class="exp-description">Analyse et traitement d'images satellites avec Pix4D pour l'extraction d'informations géospatiales.</p><div class="exp-badges"><span class="exp-badge">Télédétection</span><span class="exp-badge">ENVI</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-cube"></i></div><h3 class="exp-titre">Photogrammétrie</h3><p class="exp-description">Réalisation de modèles 3D et d'orthophotos à partir d'images de drone avec Pix4D et agisoft metashape.</p><div class="exp-badges"><span class="exp-badge">Pix4D</span><span class="exp-badge">Agisoft Metashape</span><span class="exp-badge">Drone</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-car"></i></div><h3 class="exp-titre">Analyse du trafic routier</h3><p class="exp-description">Collecte et analyse des flux de circulation à Thiès avec KoboToolbox et KoboCollect.</p><div class="exp-badges"><span class="exp-badge">KoboToolbox</span><span class="exp-badge">QGIS</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-draw-polygon"></i></div><h3 class="exp-titre">Dessin technique & plan</h3><p class="exp-description">Réalisation de plans et de dessins techniques avec AutoCAD pour des projets d'aménagement.</p><div class="exp-badges"><span class="exp-badge">AutoCAD</span><span class="exp-badge">Topographie(Levés et Implantation)</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fab fa-r-project"></i></div><h3 class="exp-titre">Programmation appliquée à la géomatique</h3><p class="exp-description">Analyse en Composantes Principales (ACP) sur des données foncières avec R.</p><div class="exp-badges"><span class="exp-badge">R</span><span class="exp-badge">ACP</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fab fa-html5"></i></div><h3 class="exp-titre">Création de sites web et d'application Django</h3><p class="exp-description">Développement de sites web modernes et responsives avec HTML, CSS, JavaScript et python.</p><div class="exp-badges"><span class="exp-badge">VS Code</span><span class="exp-badge">Python</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-map"></i></div><h3 class="exp-titre">Cartographie thématique</h3><p class="exp-description">Réalisation de cartes thématiques avec QGIS et ArcGIS pour analyser des phénomènes spatiaux.</p><div class="exp-badges"><span class="exp-badge">QGIS</span><span class="exp-badge">ArcGIS</span><span class="exp-badge">Mise en page </span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-satellite"></i></div><h3 class="exp-titre">Traitement d'images satellites</h3><p class="exp-description">Analyse et traitement d'images satellites avec Pix4D pour l'extraction d'informations géospatiales.</p><div class="exp-badges"><span class="exp-badge">Télédétection</span><span class="exp-badge">ENVI</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-cube"></i></div><h3 class="exp-titre">Photogrammétrie</h3><p class="exp-description">Réalisation de modèles 3D et d'orthophotos à partir d'images de drone avec Pix4D et agisoft metashape.</p><div class="exp-badges"><span class="exp-badge">Pix4D</span><span class="exp-badge">Agisoft Metashape</span><span class="exp-badge">Drone</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-car"></i></div><h3 class="exp-titre">Analyse du trafic routier</h3><p class="exp-description">Collecte et analyse des flux de circulation à Thiès avec KoboToolbox et KoboCollect.</p><div class="exp-badges"><span class="exp-badge">KoboToolbox</span><span class="exp-badge">QGIS</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-draw-polygon"></i></div><h3 class="exp-titre">Dessin technique & plan</h3><p class="exp-description">Réalisation de plans et de dessins techniques avec AutoCAD pour des projets d'aménagement.</p><div class="exp-badges"><span class="exp-badge">AutoCAD</span><span class="exp-badge">Topographie(Levés et Implantation)</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fab fa-r-project"></i></div><h3 class="exp-titre">Programmation appliquée à la géomatique</h3><p class="exp-description">Analyse en Composantes Principales (ACP) sur des données foncières avec R.</p><div class="exp-badges"><span class="exp-badge">R</span><span class="exp-badge">ACP</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fab fa-html5"></i></div><h3 class="exp-titre">Création de sites web et d'application Django</h3><p class="exp-description">Développement de sites web modernes et responsives avec HTML, CSS, JavaScript et python.</p><div class="exp-badges"><span class="exp-badge">VS Code</span><span class="exp-badge">Python</span></div></div></div>
         </div>
         <h3 class="text-center mb-4 mt-5" style="color:#1abc9c;"><i class="fas fa-briefcase me-2"></i> Expériences professionnelles</h3>
         <div class="row g-4">
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-draw-polygon"></i></div><h3 class="exp-titre">Extraction de plans cadastraux</h3><p class="exp-description">Extraction et analyse de plans cadastraux avec MicroStation pour la gestion des données foncières.</p><div class="exp-badges"><span class="exp-badge">MicroStation</span><span class="exp-badge">Gestion foncière</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-map-marker-alt"></i></div><h3 class="exp-titre">Levés topographiques GPS</h3><p class="exp-description">Réalisation de levées de coordonnées et implantations avec GPS topographique.</p><div class="exp-badges"><span class="exp-badge">GPS Topographique</span><span class="exp-badge">Levés terrain</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-file-alt"></i></div><h3 class="exp-titre">Procès-verbaux de morcellement</h3><p class="exp-description">Création et rédaction de procès-verbaux de morcellement pour la division de parcelles foncières.</p><div class="exp-badges"><span class="exp-badge">Morcellement</span><span class="exp-badge">Droit foncier</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-database"></i></div><h3 class="exp-titre">Mise à jour documents fonciers</h3><p class="exp-description">Mise à jour et archivage des documents fonciers pour assurer le suivi des données cadastrales.</p><div class="exp-badges"><span class="exp-badge">Archivage</span><span class="exp-badge">Base de données</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-draw-polygon"></i></div><h3 class="exp-titre">Extraction de plans cadastraux</h3><p class="exp-description">Extraction et analyse de plans cadastraux avec MicroStation pour la gestion des données foncières.</p><div class="exp-badges"><span class="exp-badge">MicroStation</span><span class="exp-badge">Gestion foncière</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-map-marker-alt"></i></div><h3 class="exp-titre">Levés topographiques GPS</h3><p class="exp-description">Réalisation de levées de coordonnées et implantations avec GPS topographique.</p><div class="exp-badges"><span class="exp-badge">GPS Topographique</span><span class="exp-badge">Levés terrain</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-file-alt"></i></div><h3 class="exp-titre">Procès-verbaux de morcellement</h3><p class="exp-description">Création et rédaction de procès-verbaux de morcellement pour la division de parcelles foncières.</p><div class="exp-badges"><span class="exp-badge">Morcellement</span><span class="exp-badge">Droit foncier</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="exp-card"><div class="exp-icon"><i class="fas fa-database"></i></div><h3 class="exp-titre">Mise à jour documents fonciers</h3><p class="exp-description">Mise à jour et archivage des documents fonciers pour assurer le suivi des données cadastrales.</p><div class="exp-badges"><span class="exp-badge">Archivage</span><span class="exp-badge">Base de données</span></div></div></div>
         </div>
     </div>
 </section>
@@ -982,17 +1145,17 @@ body.dark-mode .translate-option { color: white; }
     <div class="container">
         <h2 class="text-center mb-5 titre-section"><i class="fas fa-heart me-2"></i> Centres d'intérêt</h2>
         <div class="row g-4">
-            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-bolt"></i></div><h3 class="interet-titre">Sport</h3><p class="interet-description">Handball, esprit d'équipe et persévérance.</p><div class="interet-badges"><span class="interet-badge">🏐 Handball</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-plane"></i></div><h3 class="interet-titre">Voyage</h3><p class="interet-description">Exploration de nouveaux lieux et cultures.</p><div class="interet-badges"><span class="interet-badge">🌍 Découverte</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-music"></i></div><h3 class="interet-titre">Musique</h3><p class="interet-description">Écoute et découverte de nouveaux genres.</p><div class="interet-badges"><span class="interet-badge">🎵 Diversité musicale</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-microchip"></i></div><h3 class="interet-titre">Technologies</h3><p class="interet-description">Passionnée par les nouvelles technologies et les outils géospatiaux.</p><div class="interet-badges"><span class="interet-badge">🤖 IA & Géospatial</span></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-book"></i></div><h3 class="interet-titre">Lecture</h3><p class="interet-description">Lecture d'œuvres de fiction spéculative et de littérature fantastique.</p><div class="interet-badges"><span class="interet-badge">📖 Romans & Thrillers</span><span class="interet-badge">👻  Suspense & Mystère</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="interet-card"><div class="interet-icon"><i class="fas fa-bolt"></i></div><h3 class="interet-titre">Sport</h3><p class="interet-description">Handball, esprit d'équipe et persévérance.</p><div class="interet-badges"><span class="interet-badge">🏐 Handball</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="interet-card"><div class="interet-icon"><i class="fas fa-plane"></i></div><h3 class="interet-titre">Voyage</h3><p class="interet-description">Exploration de nouveaux lieux et cultures.</p><div class="interet-badges"><span class="interet-badge">🌍 Découverte</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="interet-card"><div class="interet-icon"><i class="fas fa-music"></i></div><h3 class="interet-titre">Musique</h3><p class="interet-description">Écoute et découverte de nouveaux genres.</p><div class="interet-badges"><span class="interet-badge">🎵 Diversité musicale</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="interet-card"><div class="interet-icon"><i class="fas fa-microchip"></i></div><h3 class="interet-titre">Technologies</h3><p class="interet-description">Passionnée par les nouvelles technologies et les outils géospatiaux.</p><div class="interet-badges"><span class="interet-badge">🤖 IA & Géospatial</span></div></div></div>
+            <div class="col-md-6 col-lg-4 reveal"><div class="interet-card"><div class="interet-icon"><i class="fas fa-book"></i></div><h3 class="interet-titre">Lecture</h3><p class="interet-description">Lecture d'œuvres de fiction spéculative et de littérature fantastique.</p><div class="interet-badges"><span class="interet-badge">📖 Romans & Thrillers</span><span class="interet-badge">👻  Suspense & Mystère</span></div></div></div>
         </div>
     </div>
 </section>
 
 <!-- CONTACT -->
-<section id="contact" class="section-page py-5">
+<section id="contact" class="section-page py-5 reveal">
     <div class="container">
         <h2 class="text-center mb-5 titre-section"><i class="fas fa-globe-africa me-2"></i> Contactez-moi</h2>
         <div class="row justify-content-center">
@@ -1047,7 +1210,7 @@ body.dark-mode .translate-option { color: white; }
             <div class="col-md-8 col-lg-6">
                 <div class="contact-card-localisation text-center">
                     <div class="contact-icon-small"><i class="fas fa-map-pin"></i></div>
-                    <h3 class="contact-titre-small">Me localiser</h3>
+                    <h3 class="contact-titre-small">Me retrouver</h3>
                     <div id="map"></div>
                 </div>
             </div>
@@ -1092,10 +1255,6 @@ body.dark-mode .translate-option { color: white; }
 
 <button id="backToTop" title="Retour en haut"><i class="fas fa-arrow-up"></i></button>
 
-<div id="zoomModal" class="zoom-modal">
-    <span class="zoom-close" onclick="fermerZoom()">&times;</span>
-    <img class="zoom-content" id="zoomImage" alt="Image agrandie">
-</div>
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -1159,6 +1318,8 @@ function init() {
     initContactForm();
     initMap();
     initCompteurs();
+    animerTitreAccueil();
+    initScrollReveal();
 }
 
 document.addEventListener('DOMContentLoaded', init);
@@ -1181,7 +1342,7 @@ function initProjects() {
         const badges = p.technologies.map(t => `<span class="badge">${t}</span>`).join('');
         container.innerHTML += `
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="projet-card">
+               <div class="projet-card" style="opacity:0;transform:translateY(30px);animation:slideUpCard 0.6s ease forwards;animation-delay:${index * 0.15}s;">
                     <div class="projet-img-wrapper">
                         <img src="${p.image}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200'" alt="Aperçu du projet : ${p.titre}">
                         <div class="projet-overlay">
@@ -1379,16 +1540,12 @@ function initScrollBar() {
 }
 
 // ===== TYPEWRITER =====
+// ===== TYPEWRITER =====
 function initTypewriter() {
     const el = document.getElementById('typewriter');
     if (!el) return;
     const phrases = ["Géomaticienne en devenir", "Développeuse web junior", "Passionnée de cartographie", "Analyste de données spatiales"];
     let phraseIndex = 0, charIndex = 0, deleting = false;
-    history.scrollRestoration = 'manual';
-    // Retour en haut au rafraîchissement
-    window.addEventListener('beforeunload', () => {
-        window.scrollTo(0, 0);
-    });
     function type() {
         const current = phrases[phraseIndex];
         if (!deleting) {
@@ -1401,6 +1558,43 @@ function initTypewriter() {
         setTimeout(type, deleting ? 60 : 90);
     }
     setTimeout(type, 500);
+}
+
+// ===== ANIMATION TITRE ACCUEIL LETTRE PAR LETTRE =====
+function animerTitreAccueil() {
+    const elements = [
+        document.querySelector('#accueil h2'),
+        document.querySelector('.contact-details'),
+        document.querySelector('.compteurs-accueil'),
+        document.querySelector('.reseaux-badges-icon'),
+        document.querySelector('.btn.btn-primary'),
+    ];
+    elements.forEach((el, i) => {
+        if (!el) return;
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = `opacity 0.6s ease ${2 + i * 0.3}s, transform 0.6s ease ${2 + i * 0.3}s`;
+        setTimeout(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, (2 + i * 0.3) * 1000);
+    });
+}
+
+// ===== ANIMATIONS AU SCROLL =====
+function initScrollReveal() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, i * 120);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 }
 
 // ===== THÈME SOMBRE =====
