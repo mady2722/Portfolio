@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portfolio de Madina Tall, géomaticienne et développeuse web junior à Thiès, Sénégal.">
+    <meta property="og:title" content="Madina Tall | Portfolio">
+    <meta property="og:description" content="Portfolio de Madina Tall, géomaticienne et développeuse web junior à Thiès, Sénégal.">
+    <title>Madina Tall | Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+/* ===== VARIABLES COULEURS ===== */
+:root {
+    --color-primary: #1abc9c;
+    --color-secondary: #2980b9;
+    --color-dark: #2c3e50;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+@media (pointer: fine) { body { cursor: none; } }
+
+/* ======= CURSEUR PERSONNALISÉ ======= */
+#cursor {
+    width: 12px; height: 12px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 999999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background 0.2s;
+}
+#cursor-follower {
+    width: 35px; height: 35px;
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 999998;
+    transform: translate(-50%, -50%);
+    transition: all 0.1s ease;
+    opacity: 0.6;
+}
+#cursor.cursor-hover { width: 20px; height: 20px; background: var(--color-secondary); }
+#cursor-follower.cursor-hover { width: 50px; height: 50px; border-color: var(--color-secondary); }
+
+/* ======= CANVAS PARTICULES ======= */
+#particles-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+}
+
+/* ======= SECTIONS ======= */
+.section-page {
+    display: block; min-height: 100vh;
+    position: relative; z-index: 1;
+    scroll-margin-top: 80px;
+}
+
+/* ======= LOADER ======= */
+#loader {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex; align-items: center; justify-content: center;
+    z-index: 99999;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+#loader.hidden { opacity: 0; visibility: hidden; }
+.loader-content { text-align: center; color: white; }
+.loader-globe { font-size: 4rem; animation: spinGlobe 1.5s linear infinite; margin-bottom: 15px; }
+@keyframes spinGlobe { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.loader-name { font-size: 2rem; font-weight: 700; letter-spacing: 3px; margin-bottom: 20px; font-family: 'Playfair Display', serif; }
+.loader-bar { width: 200px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 10px; margin: 0 auto; overflow: hidden; }
+.loader-bar-fill { height: 100%; background: white; border-radius: 10px; animation: fillBar 1.8s ease forwards; }
+@keyframes fillBar { from { width: 0%; } to { width: 100%; } }
+
+/* ======= BARRE DE SCROLL ======= */
+#scroll-progress {
+    position: fixed; top: 0; left: 0;
+    height: 4px; width: 0%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    z-index: 99998; transition: width 0.1s ease; border-radius: 0 2px 2px 0;
+}
+
+/* ======= MODE SOMBRE ======= */
+body.dark-mode { background-color: #000000; color: #f0f0f0; }
+body.dark-mode .navbar { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)) !important; border-bottom: none; }
+body.dark-mode .btn-theme-navbar { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.5); color: white; }
+body.dark-mode .btn-theme-navbar:hover { background: white; color: var(--color-primary); }
+body.dark-mode #accueil { background: black !important; color: white; }
+body.dark-mode #accueil h2,
+body.dark-mode #accueil .sous-titre,
+body.dark-mode #accueil .compteur-label,
+body.dark-mode #accueil .compteur-nb { color: white; }
+body.dark-mode #accueil .compteur-item { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+body.dark-mode #projets, body.dark-mode #contact, body.dark-mode #experience { background-color: #000000; }
+body.dark-mode .projet-card, body.dark-mode #contact form, body.dark-mode .exp-card, body.dark-mode .competence-card-domaine { background-color: #111111; color: #f0f0f0; border: 1px solid #333; }
+body.dark-mode footer { background-color: #000000 !important; border-top: 1px solid #333; }
+body.dark-mode .form-control { background-color: #111111; border-color: #333; color: white; }
+body.dark-mode .competence-pct { color: var(--color-primary); }
+body.dark-mode .nuage-container { background: rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
+
+/* ======= MENU ======= */
+.navbar { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)) !important; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+.navbar-brand, .nav-link { color: white !important; font-weight: 500; }
+.nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.2); border-radius: 5px; }
+.btn-theme-navbar { background: transparent; border: none; color: white; font-size: 1.2rem; margin-left: 10px; cursor: pointer; transition: transform 0.2s; }
+.btn-theme-navbar:hover { transform: scale(1.1); }
+
+/* ======= ACCUEIL ======= */
+#accueil {
+    min-height: 100vh; background: white;
+    position: relative; overflow: hidden;
+    color: var(--color-dark);
+    display: flex; align-items: center; padding-top: 2px;
+}
+.bienvenue-titre {
+    font-size: 2.2rem; font-weight: 700;
+    font-family: 'Playfair Display', serif; margin-bottom: 20px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary), var(--color-primary));
+    background-size: 300% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    animation: gradientMove 4s linear infinite;
+}
+@keyframes gradientMove { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
+#accueil h2 { font-size: 3rem; font-weight: 700; margin-bottom: 20px; font-family: 'Playfair Display', serif; color: var(--color-dark); }
+.sous-titre { font-size: 1.3rem; color: #555; margin-top: 10px; font-weight: 400; letter-spacing: 1px; min-height: 2rem; }
+.cursor-blink { display: inline-block; font-weight: 300; animation: blink 0.8s step-end infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.photo-droite { position: relative; animation: float 3s ease-in-out infinite; margin-top: -50px; }
+.photo-glow {
+    position: absolute; width: 420px; height: 420px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,188,156,0.2), transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    animation: pulse-glow 3s ease-in-out infinite; z-index: 0;
+}
+.photo-principale { position: relative; z-index: 1; border: 5px solid var(--color-primary); width: 320px; height: 320px; object-fit: cover; }
+@keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
+@keyframes pulse-glow { 0%, 100% { transform: translate(-50%,-50%) scale(1); opacity: 0.3; } 50% { transform: translate(-50%,-50%) scale(1.15); opacity: 0.7; } }
+.compteurs-accueil { display: flex; gap: 20px; margin: 20px 0; }
+.compteur-item { text-align: center; background: rgba(26,188,156,0.1); padding: 10px 15px; border-radius: 10px; border: 1px solid rgba(26,188,156,0.3); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.compteur-item:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(26,188,156,0.2); }
+.compteur-nb { display: block; font-size: 1.8rem; font-weight: bold; color: var(--color-primary); }
+.compteur-label { font-size: 0.7rem; color: #555; text-transform: uppercase; }
+.social-links a { color: #333; transition: 0.3s; font-size: 1.8rem; margin-right: 15px; }
+.social-links a:hover { color: var(--color-primary); transform: translateY(-3px); }
+.contact-details p { margin-bottom: 5px; color: #555; }
+.btn-primary { background: transparent; border: 2px solid var(--color-primary); color: var(--color-primary); padding: 10px 25px; transition: all 0.3s ease; }
+.btn-primary:hover { background: var(--color-primary); color: white; }
+
+/* ======= CERCLES ======= */
+.cercle { position: absolute; border-radius: 50%; pointer-events: none; z-index: 0; opacity: 0.4; }
+.cercle-1 { width:180px; height:180px; background: radial-gradient(circle, rgba(26,188,156,0.5), rgba(26,188,156,0.1)); top:5%; left:-60px; animation: flotter1 12s ease-in-out infinite; }
+.cercle-2 { width:160px; height:160px; background: radial-gradient(circle, rgba(41,128,185,0.45), rgba(41,128,185,0.1)); bottom:8%; right:-50px; animation: flotter2 14s ease-in-out infinite reverse; }
+.cercle-3 { width:140px; height:140px; background: radial-gradient(circle, rgba(26,188,156,0.55), rgba(26,188,156,0.12)); top:45%; left:-40px; animation: flotter3 16s ease-in-out infinite; }
+.cercle-4 { width:130px; height:130px; background: radial-gradient(circle, rgba(41,128,185,0.4), rgba(41,128,185,0.08)); bottom:20%; left:5%; animation: flotter4 10s ease-in-out infinite; }
+.cercle-5 { width:150px; height:150px; background: radial-gradient(circle, rgba(22,160,133,0.5), rgba(22,160,133,0.1)); top:12%; right:-30px; animation: flotter5 18s ease-in-out infinite reverse; }
+@keyframes flotter1 { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(20px,-15px) rotate(5deg); } }
+@keyframes flotter2 { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(-15px,20px) rotate(-6deg); } }
+@keyframes flotter3 { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(12px,-18px) rotate(4deg); } }
+@keyframes flotter4 { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(-10px,-12px) rotate(-4deg); } }
+@keyframes flotter5 { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(15px,15px) rotate(6deg); } }
+
+/* ======= TITRES SECTIONS ======= */
+.titre-section { color: var(--color-dark); border-bottom: 3px solid var(--color-primary); display: inline-block; padding-bottom: 10px; margin-bottom: 40px; }
+
+/* ======= PROJETS ======= */
+#projets { background: white; padding: 80px 0; transition: background-color 0.3s; }
+.projet-card { border: 1px solid #eee; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); height: 100%; background: white; transition: all 0.3s ease; }
+.projet-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(26,188,156,0.25); }
+.projet-img-wrapper { position: relative; overflow: hidden; }
+.projet-img-wrapper img { width: 100%; height: 200px; object-fit: cover; transition: transform 0.4s ease; display: block; }
+.projet-img-wrapper:hover img { transform: scale(1.08); }
+.projet-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(26,188,156,0.85); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease; }
+.projet-img-wrapper:hover .projet-overlay { opacity: 1; }
+.btn-overlay { font-weight: 600; padding: 10px 20px; border-radius: 25px; transform: translateY(10px); transition: transform 0.3s ease; }
+.projet-img-wrapper:hover .btn-overlay { transform: translateY(0); }
+.projet-card .card-body { padding: 15px; }
+.projet-card .card-title { color: var(--color-primary); font-weight: 600; }
+.projet-card .badge { background: var(--color-secondary); color: white; padding: 4px 8px; margin: 2px; border-radius: 15px; display: inline-block; font-size: 0.7rem; }
+
+/* ======= COMPÉTENCES ======= */
+#competences { background-color: #f8f9fa; padding: 80px 0; transition: background-color 0.3s ease; position: relative; }
+body.dark-mode #competences { background-color: #000000 !important; }
+body.dark-mode #competences::before {
+    content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+    pointer-events: none; z-index: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+    background-size: 30px 30px; opacity: 0.3;
+    animation: twinkle 3s ease-in-out infinite;
+}
+body.dark-mode #competences .container { position: relative; z-index: 1; }
+@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.5; } }
+
+.competence-card {
+    background: white; border-radius: 20px; padding: 1.5rem 1.2rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+    height: 100%; position: relative; overflow: hidden;
+    opacity: 0; transform: translateY(30px);
+    animation: slideUpCard 0.6s ease forwards;
+}
+.competence-card:nth-child(1) { animation-delay: 0.05s; }
+.competence-card:nth-child(2) { animation-delay: 0.1s; }
+.competence-card:nth-child(3) { animation-delay: 0.15s; }
+.competence-card:nth-child(4) { animation-delay: 0.2s; }
+.competence-card:nth-child(5) { animation-delay: 0.25s; }
+.competence-card:nth-child(6) { animation-delay: 0.3s; }
+@keyframes slideUpCard { to { opacity: 1; transform: translateY(0); } }
+.competence-card::before { content: ''; position: absolute; top:0; left:0; width:100%; height:3px; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; }
+.competence-card:hover::before { transform: scaleX(1); }
+.competence-card:hover { transform: translateY(-10px); box-shadow: 0 20px 35px rgba(26,188,156,0.2); }
+.competence-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid rgba(26,188,156,0.3); }
+.competence-header i { font-size: 1.5rem; color: var(--color-primary); transition: all 0.3s ease; }
+.competence-card:hover .competence-header i { transform: rotate(360deg) scale(1.1); }
+.competence-nom { font-weight: 700; font-size: 1.1rem; color: var(--color-dark); transition: all 0.3s ease; }
+.competence-card:hover .competence-nom { transform: translateX(5px); color: var(--color-primary); }
+.competence-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 0.5rem; }
+.logiciel-item { width: 100%; transition: all 0.3s ease; }
+.competence-card:hover .logiciel-item { transform: translateX(5px); }
+.logiciel-header { display: flex; justify-content: space-between; margin-bottom: 0.3rem; font-size: 0.85rem; }
+.logiciel-header span:first-child { font-weight: 500; color: var(--color-dark); }
+.logiciel-pct { font-weight: 600; color: var(--color-primary); transition: all 0.3s ease; }
+.competence-card:hover .logiciel-pct { transform: scale(1.1); font-weight: bold; }
+.progress { background-color: #e9ecef; border-radius: 10px; height: 6px; overflow: hidden; }
+.progress-bar { background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); width: 0%; height: 100%; border-radius: 10px; transition: width 1s ease; position: relative; }
+body.dark-mode .competence-card { background: #111111 !important; border: 1px solid #333; }
+body.dark-mode .competence-nom { color: #ffffff; }
+body.dark-mode .logiciel-header span:first-child { color: #ffffff !important; }
+body.dark-mode .logiciel-pct { color: var(--color-primary) !important; }
+body.dark-mode .progress { background-color: #333; }
+body.dark-mode .titre-section { color: #ffffff; border-bottom-color: var(--color-primary); }
+
+/* ======= EXPÉRIENCE ======= */
+#experience { background: white; padding: 80px 0; transition: background-color 0.3s; position: relative; }
+body.dark-mode #experience { background-color: #000000; }
+body.dark-mode #experience::before {
+    content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+    pointer-events: none; z-index: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+    background-size: 30px 30px; opacity: 0.3;
+    animation: twinkle 3s ease-in-out infinite;
+}
+body.dark-mode #experience .container { position: relative; z-index: 1; }
+.exp-card {
+    background: white; border-radius: 12px; padding: 0.8rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+    height: 100%; position: relative; overflow: hidden;
+    opacity: 0; transform: translateY(30px);
+    animation: slideUpCard 0.6s ease forwards;
+    border-left: 5px solid var(--color-primary);
+}
+.exp-card:nth-child(1) { animation-delay: 0.05s; }
+.exp-card:nth-child(2) { animation-delay: 0.1s; }
+.exp-card:nth-child(3) { animation-delay: 0.15s; }
+.exp-card:nth-child(4) { animation-delay: 0.2s; }
+.exp-card:nth-child(5) { animation-delay: 0.25s; }
+.exp-card:nth-child(6) { animation-delay: 0.3s; }
+.exp-card:nth-child(7) { animation-delay: 0.35s; }
+.exp-card:hover { transform: translateY(-8px); box-shadow: 0 20px 35px rgba(26,188,156,0.15); }
+.exp-card::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, rgba(26,188,156,0.03), rgba(41,128,185,0.03)); opacity:0; transition: opacity 0.4s ease; z-index:0; }
+.exp-card:hover::before { opacity: 1; }
+.exp-icon { width:35px; height:35px; background: rgba(26,188,156,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:0.6rem; transition: all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55); position:relative; z-index:1; }
+.exp-icon i { font-size:1rem; color: var(--color-primary); transition: all 0.3s ease; }
+.exp-card:hover .exp-icon { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); transform: rotate(360deg) scale(1.1); }
+.exp-card:hover .exp-icon i { color: white; }
+.exp-titre { font-size:0.9rem; font-weight:700; color: var(--color-dark); margin-bottom:0.4rem; transition: all 0.3s ease; position:relative; z-index:1; }
+.exp-card:hover .exp-titre { transform: translateX(5px); color: var(--color-primary); }
+.exp-description { font-size:0.7rem; color:#555; line-height:1.3; margin-bottom:0.6rem; transition: all 0.3s ease; position:relative; z-index:1; }
+.exp-card:hover .exp-description { transform: translateX(3px); }
+.exp-badges { display:flex; flex-wrap:wrap; gap:0.3rem; margin-top:0.4rem; }
+.exp-badge { background:transparent; padding:0.15rem 0.6rem; border-radius:20px; font-size:0.6rem; font-weight:500; color: var(--color-primary); border:1px solid var(--color-primary); transition: all 0.3s ease; position:relative; z-index:1; }
+.exp-card:hover .exp-badge { background: var(--color-primary); color: white; transform: translateY(-2px); }
+body.dark-mode .exp-card { background: #111111; border: 1px solid #333; }
+body.dark-mode .exp-titre { color: #ffffff; }
+body.dark-mode .exp-description { color: #ddd; }
+
+/* ======= CONTACT ======= */
+#contact { background: #f8f9fa; padding: 80px 0; transition: background-color 0.3s; }
+.contact-card { background: white; border-radius: 20px; padding: 1rem 1.2rem; max-width: 480px; margin: 0 auto; transition: all 0.4s cubic-bezier(0.25,0.46,0.45,0.94); border: 2px solid var(--color-primary); position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); transform: perspective(1000px) translateZ(0); }
+.contact-card:hover { transform: perspective(1000px) translateZ(20px) rotateX(3deg); box-shadow: 0 25px 45px rgba(26,188,156,0.3); border-color: var(--color-secondary); }
+.contact-icon { width:40px; height:40px; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 0.3rem; transition: all 0.3s ease; }
+.contact-icon i { font-size:1.1rem; color:white; }
+.contact-card:hover .contact-icon { transform: scale(1.1) rotate(360deg); }
+.contact-titre { text-align:center; font-size:0.95rem; font-weight:700; color: var(--color-dark); margin-bottom:0.1rem; }
+.contact-sous-titre { text-align:center; font-size:0.6rem; color: var(--color-dark); margin-bottom:0.6rem; font-weight:500; }
+.form-label { font-weight:600; color: var(--color-dark); margin-bottom:2px; font-size:0.7rem; }
+.form-control-contact { width:100%; padding:6px 12px; border:2px solid #e0e0e0; border-radius:12px; font-size:0.8rem; transition: all 0.3s ease; background:white; }
+.form-control-contact:focus { border-color: var(--color-primary); outline:none; box-shadow: 0 0 0 3px rgba(26,188,156,0.2); }
+.form-control-contact:hover { border-color: var(--color-primary); transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.05); }
+textarea.form-control-contact { min-height: 60px; }
+.contact-card .mb-3 { margin-bottom: 0.6rem !important; }
+.contact-card .d-flex { display:flex; gap:0.5rem; margin-top:0.5rem; }
+.btn-contact-submit { background: linear-gradient(135deg, var(--color-primary), #16a085); border:none; padding:6px 16px; border-radius:50px; color:white; font-weight:600; font-size:0.8rem; transition: all 0.3s ease; cursor:pointer; flex:2; box-shadow: 0 5px 0 #0e6b55; transform: translateY(-2px); position:relative; overflow:hidden; }
+.btn-contact-submit:hover { transform: translateY(-5px); box-shadow: 0 8px 0 #0e6b55; }
+.btn-contact-submit:active { transform: translateY(2px); box-shadow: 0 2px 0 #0e6b55; }
+.btn-contact-reset { background:#6c757d; border:none; padding:6px 14px; border-radius:50px; color:white; font-weight:600; font-size:0.8rem; transition: all 0.3s ease; cursor:pointer; flex:1; box-shadow: 0 5px 0 #495057; transform: translateY(-2px); }
+.btn-contact-reset:hover { transform: translateY(-5px); box-shadow: 0 8px 0 #495057; background:#5a6268; }
+.btn-contact-reset:active { transform: translateY(2px); box-shadow: 0 2px 0 #495057; }
+body.dark-mode .contact-card { background: #111111; border-color: var(--color-primary); }
+body.dark-mode .contact-titre { color: white; }
+body.dark-mode .form-label { color: #eee; }
+body.dark-mode .form-control-contact { background: #1a1a1a; border-color: #333; color: white; }
+.contact-card-localisation { max-width: 420px; margin: 0 auto; padding: 0.8rem; }
+.contact-titre-small { font-size:0.85rem; margin-bottom:0.3rem; font-weight:700; color: var(--color-dark); }
+.contact-icon-small { width:30px; height:30px; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 0.5rem; }
+.contact-icon-small i { font-size:0.9rem; color:white; }
+#map { height:200px; width:100%; border-radius:15px; z-index:1; }
+
+/* ======= RÉSEAUX SOCIAUX ======= */
+.reseaux-badges-icon { display:flex; gap:1rem; margin:20px 0; }
+.reseaux-icon { display:flex; align-items:center; justify-content:center; width:45px; height:45px; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); border-radius:50%; color:white; font-size:1.3rem; transition: all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55); text-decoration:none; box-shadow: 0 4px 10px rgba(26,188,156,0.3); }
+.reseaux-icon:hover { transform: translateY(-8px) scale(1.1); box-shadow: 0 8px 20px rgba(26,188,156,0.5); color:white; }
+.anim-social .reseaux-icon { opacity:0; transform: translateY(20px); animation: fadeInUp 0.5s ease forwards; }
+.anim-social .reseaux-icon:nth-child(1) { animation-delay: 0.2s; }
+.anim-social .reseaux-icon:nth-child(2) { animation-delay: 0.35s; }
+.anim-social .reseaux-icon:nth-child(3) { animation-delay: 0.5s; }
+@keyframes fadeInUp { to { opacity:1; transform: translateY(0); } }
+
+/* ======= À PROPOS ======= */
+.bio-texte-petit, .texte-petit { font-size:0.85rem; line-height:1.5; color:#555; }
+.badge-en-cours { display:inline-block; background: var(--color-primary); color:white; font-size:0.7rem; padding:2px 8px; border-radius:20px; margin-left:8px; }
+.competences-interactives { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.competence-badge { background: rgba(26,188,156,0.1); color: var(--color-primary); border:1px solid var(--color-primary); padding:4px 12px; border-radius:20px; font-size:0.8rem; }
+.ligne-verticale { position:absolute; left:50%; top:0; bottom:0; width:2px; background: linear-gradient(to bottom, transparent, var(--color-primary), var(--color-primary), transparent); transform: translateX(-50%); opacity:0.5; }
+.contenu-droite { padding-left:30px; }
+
+/* ======= LANGUES ======= */
+.langues-section { background: linear-gradient(135deg, rgba(26,188,156,0.05), rgba(52,152,219,0.05)); border-radius:20px; padding:2rem; }
+.titre-langues { font-size:1.8rem; color: var(--color-dark); }
+.langues-container { display:flex; justify-content:center; gap:2rem; flex-wrap:wrap; }
+.langue-card { display:flex; align-items:center; gap:1.2rem; background:white; padding:1.2rem 1.8rem; border-radius:15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); min-width:250px; transition: all 0.3s ease; cursor:pointer; }
+.langue-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(26,188,156,0.2); }
+.langue-icon { width:55px; height:55px; background: linear-gradient(135deg, var(--color-primary), #2ecc71); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:white; transition: all 0.3s ease; }
+.langue-card:hover .langue-icon { transform: rotate(360deg) scale(1.05); }
+.langue-nom { font-size:1.1rem; font-weight:600; color: var(--color-dark); margin-bottom:0.5rem; }
+.niveau-badge { display:inline-block; padding:0.2rem 0.8rem; border-radius:20px; font-size:0.7rem; font-weight:500; margin-bottom:0.5rem; }
+.niveau-badge.courant { background: rgba(26,188,156,0.15); color: var(--color-primary); border:1px solid var(--color-primary); }
+.niveau-badge.intermediaire { background: rgba(243,156,18,0.15); color:#e67e22; border:1px solid #e67e22; }
+.progress-bar-container { width:100%; height:6px; background:#e9ecef; border-radius:3px; overflow:hidden; }
+.progress-bar-fill { height:100%; width:0%; background: linear-gradient(90deg, var(--color-primary), #2ecc71); border-radius:3px; transition: width 1s ease-out; }
+body.dark-mode .langue-card { background:#111111; border:1px solid #333; }
+body.dark-mode .langue-nom { color:#ffffff; }
+
+/* ======= CENTRES D'INTÉRÊT ======= */
+#centres-interet { background:#f8f9fa; padding:80px 0; transition: background-color 0.3s; position:relative; overflow-x:hidden; }
+body.dark-mode #centres-interet { background-color:#000000; }
+body.dark-mode #centres-interet::before {
+    content:''; position:absolute; top:0; left:0; width:100%; height:100%;
+    pointer-events:none; z-index:0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px);
+    background-size:30px 30px; opacity:0.4;
+    animation: twinkle 3s ease-in-out infinite;
+}
+body.dark-mode #centres-interet .container { position:relative; z-index:1; }
+.interet-card { background:white; border-radius:35px; padding:1.2rem 1rem; text-align:center; transition: all 0.5s cubic-bezier(0.25,0.46,0.45,0.94); height:100%; border:1px solid rgba(26,188,156,0.1); position:relative; overflow:hidden; cursor:pointer; opacity:0; transform: translateY(50px) scale(0.95); animation: slideUpScale 0.7s ease forwards; }
+.interet-card:nth-child(1) { animation-delay:0.1s; }
+.interet-card:nth-child(2) { animation-delay:0.2s; }
+.interet-card:nth-child(3) { animation-delay:0.3s; }
+.interet-card:nth-child(4) { animation-delay:0.4s; }
+.interet-card:nth-child(5) { animation-delay:0.5s; }
+.interet-card:nth-child(6) { animation-delay:0.6s; }
+@keyframes slideUpScale { 0% { opacity:0; transform: translateY(50px) scale(0.95); } 100% { opacity:1; transform: translateY(0) scale(1); } }
+.interet-card::after { content:''; position:absolute; top:0; left:-100%; width:100%; height:4px; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary), var(--color-primary)); transition: left 0.5s ease; z-index:1; border-radius:35px 35px 0 0; }
+.interet-card:hover::after { left:0; }
+.interet-card:hover { transform: translateY(-12px) scale(1.02); box-shadow: 0 25px 45px rgba(26,188,156,0.25); border-color: rgba(26,188,156,0.3); }
+.interet-icon { width:60px; height:60px; background: linear-gradient(135deg, rgba(26,188,156,0.1), rgba(41,128,185,0.1)); border-radius:20px; display:flex; align-items:center; justify-content:center; margin: 0 auto 1rem; transition: all 0.5s cubic-bezier(0.68,-0.55,0.265,1.55); position:relative; z-index:2; }
+.interet-card:hover .interet-icon { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); transform: rotateY(360deg) scale(1.15); box-shadow: 0 10px 25px rgba(26,188,156,0.4); }
+.interet-icon i { font-size:1.6rem; color: var(--color-primary); transition: all 0.4s ease; }
+.interet-card:hover .interet-icon i { color:white; }
+.interet-titre { font-size:1.1rem; font-weight:700; color: var(--color-dark); margin-bottom:0.5rem; transition: all 0.4s ease; position:relative; z-index:2; display:inline-block; }
+.interet-card:hover .interet-titre { color: var(--color-primary); transform: translateY(-2px); }
+.interet-description { font-size:0.75rem; color:#555; line-height:1.5; margin-bottom:0.8rem; position:relative; z-index:2; transition: all 0.4s ease; }
+.interet-badges { display:flex; flex-wrap:wrap; gap:0.4rem; justify-content:center; margin-top:0.3rem; position:relative; z-index:2; }
+.interet-badge { background:transparent; padding:0.2rem 0.7rem; border-radius:30px; font-size:0.6rem; font-weight:500; color: var(--color-primary); border:1.5px solid var(--color-primary); transition: all 0.3s cubic-bezier(0.68,-0.55,0.265,1.55); }
+.interet-card:hover .interet-badge { background: var(--color-primary); color:white; transform: translateY(-3px) scale(1.05); }
+body.dark-mode .interet-card { background: rgba(17,17,17,0.9); border-color: rgba(26,188,156,0.2); }
+body.dark-mode .interet-titre { color:#ffffff; }
+body.dark-mode .interet-description { color:#bbb; }
+
+/* ======= FOOTER ======= */
+footer { background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)) !important; padding:5px 0; position:relative; z-index:1; font-size:0.65rem; }
+footer a { color:white !important; text-decoration:none; transition: all 0.3s ease; display:inline-block; font-size:0.65rem; }
+.footer-menu-vertical { display:flex; flex-direction:column; gap:2px; }
+.footer-menu-vertical a { color:white; text-decoration:none; font-size:0.6rem; }
+.nuage-container { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 80px 80px 80px 80px / 50px 50px 50px 50px; padding:4px 15px; margin:3px auto; max-width:1100px; border:2px solid rgba(255,255,255,0.3); box-shadow: 0 15px 35px rgba(0,0,0,0.2); animation: flotterNuage 6s ease-in-out infinite; }
+@keyframes flotterNuage { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+.citation-stylisee { font-size:0.7rem; font-weight:400; line-height:1.1; color:white; font-style:italic; letter-spacing:1px; max-width:500px; font-family:'Playfair Display',serif; margin:0; }
+.infos-personnelles { font-size:0.6rem; color:white; text-align:right; line-height:1.2; margin:0; }
+.infos-personnelles p { margin:1px 0; }
+.nuage-container .compteur-visites { color: rgba(255,255,255,0.9); font-size:0.6rem; border-top:1px solid rgba(255,255,255,0.2); padding-top:3px; margin-top:3px; }
+
+/* ======= BOUTON RETOUR EN HAUT ======= */
+#backToTop { position:fixed; bottom:90px; right:20px; width:45px; height:45px; border-radius:50%; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); color:white; border:none; font-size:1.1rem; cursor:pointer; box-shadow: 0 4px 15px rgba(26,188,156,0.4); opacity:0; visibility:hidden; transition: all 0.3s ease; z-index:9999; }
+#backToTop.visible { opacity:1; visibility:visible; }
+#backToTop:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(26,188,156,0.6); }
+
+/* ======= POINTS BRILLANTS ======= */
+@keyframes briller { 0% { opacity:0.1; transform:scale(0.8); } 50% { opacity:0.8; transform:scale(1.2); } 100% { opacity:0.2; transform:scale(0.9); } }
+#etoiles-container { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:hidden; }
+.point-brillant { position:absolute; background:white; width:2px; height:2px; opacity:0; animation: briller 4s infinite alternate ease-in-out; }
+
+/* ======= MODALES ======= */
+.modal-projet { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center; }
+.apercuPopup { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index:10002; justify-content:center; align-items:center; }
+.apercuPopup-content { background:white; width:90%; max-width:420px; max-height:85vh; border-radius:20px; overflow-y:auto; overflow-x:hidden; position:relative; }
+.apercuPopup-content img { width:100%; height:180px; object-fit:cover; }
+.apercuPopup-body { padding:20px; }
+.apercuPopup-body h4 { color: var(--color-primary); margin-bottom:8px; }
+.apercuPopup-body p { font-size:0.85rem; color:#555; line-height:1.5; white-space:pre-line; }
+.apercuPopup-tech { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0; }
+.apercuPopup-tech span { background: rgba(26,188,156,0.1); padding:4px 10px; border-radius:20px; font-size:0.7rem; color: var(--color-primary); border:1px solid var(--color-primary); }
+.apercuPopup-footer { display:flex; justify-content:flex-end; margin-top:10px; }
+.apercuPopup-footer button { background:#6c757d; border:none; padding:5px 12px; font-size:0.7rem; border-radius:20px; color:white; cursor:pointer; }
+body.dark-mode .apercuPopup-content { background:#1a1a1a; }
+body.dark-mode .apercuPopup-body p { color:#ccc; }
+.zoom-modal { display:none; position:fixed; z-index:100000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.9); justify-content:center; align-items:center; }
+.zoom-content { max-width:90%; max-height:90%; border-radius:10px; }
+.zoom-close { position:absolute; top:20px; right:35px; color:#fff; font-size:40px; font-weight:bold; cursor:pointer; }
+
+/* ======= SCROLL PROGRESS ======= */
+#scroll-progress { position:fixed; top:0; left:0; height:4px; width:0%; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); z-index:99998; transition: width 0.1s ease; border-radius:0 2px 2px 0; }
+
+/* ======= RESPONSIVE ======= */
+@media (max-width: 768px) {
+    body { cursor: auto; }
+    #cursor, #cursor-follower { display:none; }
+    #accueil h2 { font-size:2.2rem; }
+    .photo-droite img { width:280px !important; height:280px !important; }
+    .photo-glow { width:300px; height:300px; }
+    .bienvenue-titre { font-size:1.8rem; }
+    .compteurs-accueil { gap:15px; justify-content:center; flex-wrap:wrap; }
+    .compteur-item { padding:10px 15px; }
+    .compteur-nb { font-size:1.8rem; }
+    .contact-card { padding:1.2rem; }
+    .footer-menu-vertical { flex-direction:row; justify-content:center; flex-wrap:wrap; gap:6px; }
+    .citation-stylisee { font-size:0.6rem; text-align:center; max-width:100%; }
+    .infos-personnelles { text-align:center; margin-top:3px; font-size:0.55rem; }
+    .ligne-verticale { position:relative; left:auto; width:60%; height:2px; margin:20px auto; background: linear-gradient(to right, transparent, var(--color-primary), transparent); transform:none; }
+    .contenu-droite { padding-left:0 !important; }
+    #a-propos .col-md-6 { text-align:center; width:100%; padding:0 15px; }
+    .langue-card { width:100%; padding:1rem; }
+    .interet-card { padding:1rem; border-radius:25px; }
+    .exp-card { padding:0.6rem; }
+    .progress { width:100%; }
+        
+    body.dark-mode .bio-texte-petit,
+    body.dark-mode .texte-petit,
+    body.dark-mode .contact-details p,
+    body.dark-mode .sous-titre,
+    body.dark-mode .interet-description,
+    body.dark-mode .compteur-label,
+    body.dark-mode .social-links a { color: #ffffff; }
+
+    /* ======= ZOOM / LIGHTBOX ======= */
+.zoom-modal {
+    display: none;
+    position: fixed;
+    z-index: 100000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.92);
+    justify-content: center;
+    align-items: center;
+}
+.zoom-content {
+    max-width: 85%;
+    max-height: 82vh;
+    border-radius: 10px;
+    object-fit: contain;
+    transition: opacity 0.25s ease;
+}
+.zoom-close {
+    position: absolute;
+    top: 18px; right: 30px;
+    color: #fff;
+    font-size: 38px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100001;
+    line-height: 1;
+}
+.zoom-close:hover { color: var(--color-primary); }
+.zoom-prev, .zoom-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    font-size: 2rem;
+    padding: 12px 18px;
+    cursor: pointer;
+    border-radius: 50%;
+    z-index: 100001;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+.zoom-prev { left: 20px; }
+.zoom-next { right: 20px; }
+.zoom-prev:hover, .zoom-next:hover {
+    background: var(--color-primary);
+    transform: translateY(-50%) scale(1.1);
+}
+.zoom-counter {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 0.9rem;
+    background: rgba(0,0,0,0.5);
+    padding: 5px 15px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+}
+@media (max-width: 768px) {
+    .zoom-prev { left: 8px; }
+    .zoom-next { right: 8px; }
+    .zoom-prev, .zoom-next { font-size: 1.4rem; padding: 8px 12px; }
+}
+@media (max-width: 768px) {
+    #accueil .col-12.text-center {
+        padding: 0 15px;
+        word-break: break-word;
+    }
+    .bienvenue-titre {
+        font-size: 1.5rem !important;
+        letter-spacing: 1px;
+    }
+    .photo-droite {
+        margin-top: 20px !important;
+        margin-bottom: 20px;
+    }
+    .photo-principale {
+        width: 250px !important;
+        height: 250px !important;
+    }
+    .photo-glow {
+        width: 280px !important;
+        height: 280px !important;
+    }
+}
+@media (max-width: 768px) {
+    
+    /* Empêcher tout débordement horizontal */
+    html, body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+    
+    .container {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    /* Sections */
+    .section-page {
+        width: 100% !important;
+        overflow-x: hidden;
+    }
+
+    /* Cartes */
+    .competence-card,
+    .exp-card,
+    .projet-card,
+    .interet-card,
+    .contact-card,
+    .langue-card {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Colonnes Bootstrap */
+    .col-md-6,
+    .col-md-4,
+    .col-lg-4,
+    .col-md-8,
+    .col-lg-6,
+    .col-lg-7 {
+        width: 100% !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    /* Footer */
+    footer .row {
+        flex-direction: column;
+    }
+    .nuage-container {
+        width: 100% !important;
+        border-radius: 20px !important;
+    }
+}
+#citation { transition: opacity 0.5s ease; }
+.translate-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+.translate-toggle {
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(26,188,156,0.4);
+    transition: all 0.3s ease;
+}
+.translate-toggle:hover { transform: scale(1.1); }
+.translate-menu {
+    display: none;
+    position: absolute;
+    bottom: 55px;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+    min-width: 160px;
+}
+.translate-menu.open { display: block; }
+.translate-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #333;
+    transition: background 0.2s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+.translate-option:hover { background: rgba(26,188,156,0.1); color: var(--color-primary); }
+body.dark-mode .translate-menu { background: #1a1a1a; }
+body.dark-mode .translate-option { color: white; }
+.savistu-bar {
+    color: white;
+    font-size: 0.65rem;
+    opacity: 0.8;
+    padding: 3px 0;
+}
+    </style>
+</head>
+<>
+<div id="cursor"></div>
+<div id="cursor-follower"></div>
+
+<div id="loader">
+    <div class="loader-content">
+        <div class="loader-globe"><i class="fas fa-globe-africa"></i></div>
+        <div class="loader-name">Madina Mountaga TALL</div>
+        <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+    </div>
+</div>
+
+<div id="scroll-progress"></div>
+<canvas id="particles-canvas"></canvas>
+
+<div class="cercle cercle-1"></div>
+<div class="cercle cercle-2"></div>
+<div class="cercle cercle-3"></div>
+<div class="cercle cercle-4"></div>
+<div class="cercle cercle-5"></div>
+
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">Madina Mountaga  TALL</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link active" href="#accueil">Accueil</a></li>
+                <li class="nav-item"><a class="nav-link" href="#a-propos">À propos</a></li>
+                <li class="nav-item"><a class="nav-link" href="#projets">Projets</a></li>
+                <li class="nav-item"><a class="nav-link" href="#competences">Compétences</a></li>
+                <li class="nav-item"><a class="nav-link" href="#experience">Expériences</a></li>
+                <li class="nav-item"><a class="nav-link" href="#centres-interet">Centres d'intérêt</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                <li class="nav-item">
+                    <button id="themeToggleBtn" class="btn-theme-navbar" title="Changer le thème">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div style="display:inline-block;position:relative;">
+                        <button class="btn-theme-navbar" onclick="toggleTranslateMenu()" title="Traduire">🌐</button>
+                        <div class="translate-menu" id="translateMenu">
+                            <button class="translate-option" onclick="traduire('fr')">🇫🇷 Français</button>
+                            <button class="translate-option" onclick="traduire('en')">🇬🇧 Anglais</button>
+                            <button class="translate-option" onclick="traduire('es')">🇪🇸 Espagnol</button>
+                            <button class="translate-option" onclick="traduire('ar')">🇸🇦 Arabe</button>
+                            <button class="translate-option" onclick="traduire('zh')">🇨🇳 Chinois</button>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- ACCUEIL -->
+<section id="accueil" class="section-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mt-5 pt-5">
+                <h1 class="bienvenue-titre">BIENVENUE DANS MON PORTFOLIO</h1>
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-md-6 order-md-1 order-2">
+                <h2>Je suis Madina M. Tall</h2>
+                <p><span id="typewriter"></span><span class="cursor-blink">|</span></p>
+                <div class="compteurs-accueil">
+                    <div class="compteur-item">
+                        <span class="compteur-nb" id="compteur-projets">0</span>
+                        <span class="compteur-label">PROJETS</span>
+                    </div>
+                    <div class="compteur-item">
+                        <span class="compteur-nb" id="compteur-competences">0</span>
+                        <span class="compteur-label">COMPÉTENCES</span>
+                    </div>
+                    <div class="compteur-item">
+                        <span class="compteur-nb" id="compteur-experiences">0</span>
+                        <span class="compteur-label">EXPÉRIENCES</span>
+                    </div>
+                </div>
+                <div class="reseaux-badges-icon anim-social">
+                    <a href="https://www.instagram.com/queen_baby_mady/" target="_blank" rel="noopener noreferrer" class="reseaux-icon" aria-label="Suivez-moi sur Instagram">
+                        <i class="fab fa-instagram" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/madina-tall-a0945a375/" target="_blank" rel="noopener noreferrer" class="reseaux-icon" aria-label="Connectez-vous sur LinkedIn">
+                        <i class="fab fa-linkedin" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://github.com/mady2722" target="_blank" rel="noopener noreferrer" class="reseaux-icon" aria-label="Voir mes projets sur GitHub">
+                        <i class="fab fa-github" aria-hidden="true"></i>
+                    </a>
+                </div>
+                <div class="contact-details">
+                    <p>📞 +221 78 478 76 00</p>
+                    <p>📧 tallmadina265@gmail.com</p>
+                    <p>📍 Thiès, Sénégal</p>
+                </div>
+                <a href="CV_Madina_Tall.pdf" download class="btn btn-primary">
+                    <i class="fas fa-download me-2"></i>Télécharger mon CV
+                </a>
+            </div>
+            <div class="col-md-6 text-center order-md-2 order-1 mb-4 mb-md-0">
+                <div class="photo-droite">
+                    <div class="photo-glow"></div>
+                    <img src="../Images/WhatsApp Image 2026-06-26 at 02.58.57.jpeg"
+                        alt="Portrait de Madina Tall, étudiante en Géomatique à Thiès, Sénégal"
+                        class="img-fluid rounded-circle photo-principale"
+                        style="width:350px;height:350px;object-fit:cover;border:5px solid rgb(19,253,214);">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- À PROPOS -->
+<section id="a-propos" class="section-page py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 titre-section"><i class="fas fa-user-circle me-2"></i> À propos de moi</h2>
+        <div class="row position-relative">
+            <div class="ligne-verticale"></div>
+            <div class="col-md-6">
+                <h3>Qui suis-je ?</h3>
+                <div class="contenu-gauche">
+                    <img src="../Images/WhatsApp Image 2026-06-26 at 02.58.57.jpeg"
+                         alt="Portrait de Madina Tall"
+                         class="img-fluid rounded-circle mb-4"
+                         style="width:180px;height:180px;object-fit:cover;border:3px solid #1abc9c;">
+                    <p class="bio-texte-petit">Je m'appelle <strong>Madina Tall</strong>, étudiante en Géomatique à l'Université Iba Der Thiam de Thiès. Passionnée par les données géospatiales et le développement web, j'aime transformer l'information territoriale en récits visuels et interactifs.</p>
+                    <p class="bio-texte-petit">Curieuse et déterminée, je souhaite allier la puissance des SIG (QGIS, ArcGIS) avec les technologies web modernes pour créer des cartes intelligentes et accessibles à tous.</p>
+                    <div class="info-encadre"><i class="fas fa-map-marker-alt me-2"></i> Thiès, Sénégal</div>
+                    <div class="info-encadre mt-2"><i class="fas fa-university me-2"></i> UIDT – UFR des Sciences de l'Ingénieur,Géomatique (2024 – présent)</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3>Mon parcours</h3>
+                <div class="contenu-droite">
+                    <h4><i class="fas fa-graduation-cap me-2"></i> Formation</h4>
+                    <p class="texte-petit"><strong>Baccalauréat L2</strong> – 2024</p>
+                    <p class="texte-petit"><strong>Licence 1 Géomatique</strong> – UIDT – UFR des Sciences de l'Ingénieur,Géomatique (2024 – 2025)</p>
+                    <p class="texte-petit"><strong>Licence 2 Géomatique</strong> – UIDT – UFR des Sciences de l'Ingénieur,Géomatique (2025 – 2026) <span class="badge-en-cours">En cours</span></p>
+                    <h4 class="mt-4"><i class="fas fa-code me-2"></i> Compétences clés</h4>
+                    <div class="competences-interactives">
+                        <span class="competence-badge">QGIS</span>
+                        <span class="competence-badge">ArcGIS</span>
+                        <span class="competence-badge">ENVI</span>
+                        <span class="competence-badge">Agisoft Metashape</span>
+                        <span class="competence-badge">Python</span>
+                        <span class="competence-badge">R</span>
+                        <span class="competence-badge">Développement web</span>
+                    </div>
+                    <h4 class="mt-4"><i class="fas fa-briefcase me-2"></i> Expérience professionnelle</h4>
+                    <p class="texte-petit"><strong>Stage au Cadastre</strong> – Vacances 2025<br>Numérisation des plans cadastraux, traitement de données géospatiales avec QGIS, gestion des parcelles et documentation foncière.</p>
+                    <p class="texte-petit"><strong>Projets académiques</strong> – Analyse du trafic routier, ACP foncière, cartes thématiques Niakhar, Développenment de site web et d'application Django.</p>
+                    
+                </div>
+            </div>
+        </div>
+        <!-- LANGUES -->
+        <div class="row mt-5 pt-4">
+            <div class="col-12">
+                <div class="langues-section">
+                    <h3 class="text-center mb-4 titre-langues"><i class="fas fa-language me-2"></i> Langues</h3>
+                    <div class="langues-container">
+                        <div class="langue-card">
+                            <div class="langue-icon"><i class="fas fa-flag-checkered"></i></div>
+                            <div class="langue-info">
+                                <div class="langue-nom">Français</div>
+                                <div class="langue-niveau">
+                                    <span class="niveau-badge courant">Courant</span>
+                                    <div class="progress-bar-container"><div class="progress-bar-fill" data-level="90"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="langue-card">
+                            <div class="langue-icon"><i class="fas fa-language"></i></div>
+                            <div class="langue-info">
+                                <div class="langue-nom">Anglais</div>
+                                <div class="langue-niveau">
+                                    <span class="niveau-badge intermediaire">Intermédiaire</span>
+                                    <div class="progress-bar-container"><div class="progress-bar-fill" data-level="50"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PROJETS -->
+<section id="projets" class="section-page py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 titre-section"><i class="fas fa-globe-africa me-2"></i> Mes Projets</h2>
+        <div class="row" id="projets-container"></div>
+    </div>
+</section>
+
+<!-- APERÇU POPUP -->
+<div id="apercuPopup" class="apercuPopup">
+    <div class="apercuPopup-content">
+        <img id="apercuImage" src="" alt="Aperçu du projet">
+        <div class="apercuPopup-body">
+            <h4 id="apercuTitre"></h4>
+            <p id="apercuDescription"></p>
+            <div id="apercuTech" class="apercuPopup-tech"></div>
+            <div id="apercuMiniatures" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:15px;"></div>
+            <div class="apercuPopup-footer">
+                <button onclick="fermerApercu()">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LIGHTBOX ZOOM -->
+<div id="zoomModal" class="zoom-modal">
+    <span class="zoom-close" onclick="fermerZoom()">&times;</span>
+    <button class="zoom-prev" onclick="naviguerZoom(-1)">&#10094;</button>
+    <img class="zoom-content" id="zoomImage" alt="Image agrandie">
+    <button class="zoom-next" onclick="naviguerZoom(1)">&#10095;</button>
+    <div class="zoom-counter" id="zoomCounter"></div>
+</div>
+
+<!-- COMPÉTENCES -->
+<section id="competences" class="section-page py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 titre-section"><i class="fas fa-code me-2"></i> Compétences Techniques</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="competence-card">
+                    <div class="competence-header"><i class="fas fa-map-marked-alt"></i><span class="competence-nom">Topographie / Dessin & Conception</span></div>
+                    <div class="competence-list">
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Autocad</span><span class="logiciel-pct">70%</span></div><div class="progress"><div class="progress-bar" data-width="65"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>MicroStation</span><span class="logiciel-pct">60%</span></div><div class="progress"><div class="progress-bar" data-width="60"></div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="competence-card">
+                    <div class="competence-header"><i class="fas fa-map-marked-alt"></i><span class="competence-nom">Bases des outils topographiques</span></div>
+                    <div class="competence-list">
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Station Totale</span><span class="logiciel-pct">75%</span></div><div class="progress"><div class="progress-bar" data-width="75"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>GPS Topographique</span><span class="logiciel-pct">75%</span></div><div class="progress"><div class="progress-bar" data-width="75"></div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="competence-card">
+                    <div class="competence-header"><i class="fas fa-draw-polygon"></i><span class="competence-nom">Cartographie</span></div>
+                    <div class="competence-list">
+                        <div class="logiciel-item"><div class="logiciel-header"><span>QGIS</span><span class="logiciel-pct">75%</span></div><div class="progress"><div class="progress-bar" data-width="75"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>ArcGIS</span><span class="logiciel-pct">65%</span></div><div class="progress"><div class="progress-bar" data-width="65"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Philcarto</span><span class="logiciel-pct">55%</span></div><div class="progress"><div class="progress-bar" data-width="60"></div></div></div>
+                    </div>
+                </div>
+          y  </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="competence-card">
+                    <div class="competence-header"><i class="fas fa-camera"></i><span class="competence-nom">Photogrammétrie & Télédétection</span></div>
+                    <div class="competence-list">
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Pix4D</span><span class="logiciel-pct">65%</span></div><div class="progress"><div class="progress-bar" data-width="65"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Agisoft Metashape</span><span class="logiciel-pct">70%</span></div><div class="progress"><div class="progress-bar" data-width="70"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>ENVI</span><span class="logiciel-pct">75%</span></div><div class="progress"><div class="progress-bar" data-width="75"></div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="competence-card">
+                    <div class="competence-header"><i class="fab fa-python"></i><span class="competence-nom">Programmation & Base de données</span></div>
+                    <div class="competence-list">
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Python</span><span class="logiciel-pct">65%</span></div><div class="progress"><div class="progress-bar" data-width="65"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>R</span><span class="logiciel-pct">70%</span></div><div class="progress"><div class="progress-bar" data-width="70"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>SQL</span><span class="logiciel-pct">75%</span></div><div class="progress"><div class="progress-bar" data-width="75"></div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="competence-card">
+                    <div class="competence-header"><i class="fab fa-html5"></i><span class="competence-nom">Développement web</span></div>
+                    <div class="competence-list">
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Python</span><span class="logiciel-pct">65%</span></div><div class="progress"><div class="progress-bar" data-width="65"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>HTML</span><span class="logiciel-pct">80%</span></div><div class="progress"><div class="progress-bar" data-width="80"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>CSS</span><span class="logiciel-pct">75%</span></div><div class="progress"><div class="progress-bar" data-width="75"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>JavaScript</span><span class="logiciel-pct">60%</span></div><div class="progress"><div class="progress-bar" data-width="60"></div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="competence-card">
+                    <div class="competence-header"><i class="fas fa-file-alt"></i><span class="competence-nom">Bureautique</span></div>
+                    <div class="competence-list">
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Word</span><span class="logiciel-pct">90%</span></div><div class="progress"><div class="progress-bar" data-width="90"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>Excel</span><span class="logiciel-pct">85%</span></div><div class="progress"><div class="progress-bar" data-width="85"></div></div></div>
+                        <div class="logiciel-item"><div class="logiciel-header"><span>PowerPoint</span><span class="logiciel-pct">80%</span></div><div class="progress"><div class="progress-bar" data-width="80"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- EXPÉRIENCES -->
+<section id="experience" class="section-page py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 titre-section"><i class="fas fa-graduation-cap me-2"></i> Expériences</h2>
+        <h3 class="text-center mb-4" style="color:#1abc9c;"><i class="fas fa-university me-2"></i> Expériences académiques</h3>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-map"></i></div><h3 class="exp-titre">Cartographie thématique</h3><p class="exp-description">Réalisation de cartes thématiques avec QGIS et ArcGIS pour analyser des phénomènes spatiaux.</p><div class="exp-badges"><span class="exp-badge">QGIS</span><span class="exp-badge">ArcGIS</span><span class="exp-badge">Mise en page </span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-satellite"></i></div><h3 class="exp-titre">Traitement d'images satellites</h3><p class="exp-description">Analyse et traitement d'images satellites avec Pix4D pour l'extraction d'informations géospatiales.</p><div class="exp-badges"><span class="exp-badge">Télédétection</span><span class="exp-badge">ENVI</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-cube"></i></div><h3 class="exp-titre">Photogrammétrie</h3><p class="exp-description">Réalisation de modèles 3D et d'orthophotos à partir d'images de drone avec Pix4D et agisoft metashape.</p><div class="exp-badges"><span class="exp-badge">Pix4D</span><span class="exp-badge">Agisoft Metashape</span><span class="exp-badge">Drone</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-car"></i></div><h3 class="exp-titre">Analyse du trafic routier</h3><p class="exp-description">Collecte et analyse des flux de circulation à Thiès avec KoboToolbox et KoboCollect.</p><div class="exp-badges"><span class="exp-badge">KoboToolbox</span><span class="exp-badge">QGIS</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-draw-polygon"></i></div><h3 class="exp-titre">Dessin technique & plan</h3><p class="exp-description">Réalisation de plans et de dessins techniques avec AutoCAD pour des projets d'aménagement.</p><div class="exp-badges"><span class="exp-badge">AutoCAD</span><span class="exp-badge">Topographie(Levés et Implantation)</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fab fa-r-project"></i></div><h3 class="exp-titre">Programmation appliquée à la géomatique</h3><p class="exp-description">Analyse en Composantes Principales (ACP) sur des données foncières avec R.</p><div class="exp-badges"><span class="exp-badge">R</span><span class="exp-badge">ACP</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fab fa-html5"></i></div><h3 class="exp-titre">Création de sites web et d'application Django</h3><p class="exp-description">Développement de sites web modernes et responsives avec HTML, CSS, JavaScript et python.</p><div class="exp-badges"><span class="exp-badge">VS Code</span><span class="exp-badge">Python</span></div></div></div>
+        </div>
+        <h3 class="text-center mb-4 mt-5" style="color:#1abc9c;"><i class="fas fa-briefcase me-2"></i> Expériences professionnelles</h3>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-draw-polygon"></i></div><h3 class="exp-titre">Extraction de plans cadastraux</h3><p class="exp-description">Extraction et analyse de plans cadastraux avec MicroStation pour la gestion des données foncières.</p><div class="exp-badges"><span class="exp-badge">MicroStation</span><span class="exp-badge">Gestion foncière</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-map-marker-alt"></i></div><h3 class="exp-titre">Levés topographiques GPS</h3><p class="exp-description">Réalisation de levées de coordonnées et implantations avec GPS topographique.</p><div class="exp-badges"><span class="exp-badge">GPS Topographique</span><span class="exp-badge">Levés terrain</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-file-alt"></i></div><h3 class="exp-titre">Procès-verbaux de morcellement</h3><p class="exp-description">Création et rédaction de procès-verbaux de morcellement pour la division de parcelles foncières.</p><div class="exp-badges"><span class="exp-badge">Morcellement</span><span class="exp-badge">Droit foncier</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="exp-card"><div class="exp-icon"><i class="fas fa-database"></i></div><h3 class="exp-titre">Mise à jour documents fonciers</h3><p class="exp-description">Mise à jour et archivage des documents fonciers pour assurer le suivi des données cadastrales.</p><div class="exp-badges"><span class="exp-badge">Archivage</span><span class="exp-badge">Base de données</span></div></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- CENTRES D'INTÉRÊT -->
+<section id="centres-interet" class="section-page py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 titre-section"><i class="fas fa-heart me-2"></i> Centres d'intérêt</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-bolt"></i></div><h3 class="interet-titre">Sport</h3><p class="interet-description">Handball, esprit d'équipe et persévérance.</p><div class="interet-badges"><span class="interet-badge">🏐 Handball</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-plane"></i></div><h3 class="interet-titre">Voyage</h3><p class="interet-description">Exploration de nouveaux lieux et cultures.</p><div class="interet-badges"><span class="interet-badge">🌍 Découverte</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-music"></i></div><h3 class="interet-titre">Musique</h3><p class="interet-description">Écoute et découverte de nouveaux genres.</p><div class="interet-badges"><span class="interet-badge">🎵 Diversité musicale</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-microchip"></i></div><h3 class="interet-titre">Technologies</h3><p class="interet-description">Passionnée par les nouvelles technologies et les outils géospatiaux.</p><div class="interet-badges"><span class="interet-badge">🤖 IA & Géospatial</span></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="interet-card"><div class="interet-icon"><i class="fas fa-book"></i></div><h3 class="interet-titre">Lecture</h3><p class="interet-description">Lecture d'œuvres de fiction spéculative et de littérature fantastique.</p><div class="interet-badges"><span class="interet-badge">📖 Romans & Thrillers</span><span class="interet-badge">👻  Suspense & Mystère</span></div></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="section-page py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 titre-section"><i class="fas fa-globe-africa me-2"></i> Contactez-moi</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="contact-card">
+                    <div class="contact-icon"><i class="fas fa-envelope-open-text"></i></div>
+                    <h3 class="contact-titre">Envoyez-moi un message</h3>
+                    <p class="contact-sous-titre">Je vous répondrai dans les plus brefs délais</p>
+                    <form id="contact-form" action="https://formspree.io/f/xxxxxxxx" method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="prenom">Prénom *</label>
+                                <input type="text" class="form-control-contact" id="prenom" required placeholder="Ex: Madina">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="nom">Nom *</label>
+                                <input type="text" class="form-control-contact" id="nom" required placeholder="Ex: Tall">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="email">Email *</label>
+                            <input type="email" class="form-control-contact" id="email" required placeholder="Ex: exemple@gmail.com">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="raison">Raison du contact *</label>
+                            <select class="form-control-contact" id="raison" required>
+                                <option value="">Choisissez...</option>
+                                <option value="projet">📁 Proposition de projet</option>
+                                <option value="stage">🎓 Demande de stage</option>
+                                <option value="info">ℹ️ Demande d'information</option>
+                                <option value="autre">📝 Autre</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="message">Message </label>
+                            <textarea class="form-control-contact" id="message" rows="4" placeholder="Écrivez votre message ici... (optionnel)"></textarea>
+                        </div>
+                        <div class="d-flex">
+                            <button type="submit" class="btn-contact-submit">
+                                <i class="fas fa-paper-plane me-2"></i>Envoyer le message
+                            </button>
+                            <button type="reset" id="resetFormBtn" class="btn-contact-reset">
+                                <i class="fas fa-undo-alt me-2"></i>Réinitialiser
+                            </button>
+                        </div>
+                    </form>
+                    <div id="form-notification" style="display:none;margin-top:10px;padding:10px 15px;border-radius:10px;font-size:0.85rem;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-5 justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="contact-card-localisation text-center">
+                    <div class="contact-icon-small"><i class="fas fa-map-pin"></i></div>
+                    <h3 class="contact-titre-small">Me localiser</h3>
+                    <div id="map"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="text-white text-center py-4">
+    <div class="container">
+        <div class="row align-items-start">
+            <div class="col-md-4 text-center text-md-start mb-4 mb-md-0">
+                <p class="mb-2"><a href="tel:+221784877600">📞 +221 78 487 76 00</a></p>
+                <p class="mb-2"><a href="https://maps.app.goo.gl/GWFW2sL47Y2UHxxQ6" target="_blank">📍 Thiès, Sénégal - Itinéraire</a></p>
+                <p class="mb-2"><a href="mailto:tallmadina265@gmail.com">📧 tallmadina265@gmail.com</a></p>
+                <p class="mb-0">🎓 UIDT-UFR SI, Géomatique</p>
+            </div>
+            <div class="col-md-4 text-center mb-4 mb-md-0">
+                <div class="footer-menu-vertical">
+                    <a href="#accueil">Accueil</a>
+                    <a href="#projets">Projets</a>
+                    <a href="#competences">Compétences</a>
+                    <a href="#experience">Expérience</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="nuage-container petit-nuage">
+                    <div class="citation-stylisee" id="citation">"Les données racontent des histoires"</div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4 pt-3 border-top border-white border-opacity-25">
+            <div class="col-12 text-center">
+                <div class="small mb-2">&copy; 2025 Madina Tall – Étudiante en Géomatique / Développeuse web junior</div>
+                <div class="savistu-bar mb-2">👀 Visiteurs : <span id="compteur">0</span></div>
+                <div class="small text-white-50">🎉 Savais-tu ? Thiès est surnommée la "capitale du rail" du Sénégal !</div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<button id="backToTop" title="Retour en haut"><i class="fas fa-arrow-up"></i></button>
+
+<div id="zoomModal" class="zoom-modal">
+    <span class="zoom-close" onclick="fermerZoom()">&times;</span>
+    <img class="zoom-content" id="zoomImage" alt="Image agrandie">
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ===== DONNÉES PROJETS (source unique) =====
+const projets = [
+    {
+        titre: "Analyse du trafic routier",
+        description: "Visualisation des flux de circulation à Thiès",
+        apercuDescription: "📍Objectif: Quantifier et analyser les flux de véhicules aux principaux carrefours de Thiès.\n\n📋 Méthodologie : Réalisation du formulaire avec KoboToolBox / Collecte sur le terrain avec KoboCollect (10 carrefours, 3 périodes, comptage par type de véhicule).\n\n📊 Résultats clés :\n- 47 527 véhicules/jour\n- Pic à l'Angle Serigne Fallou (9 023)\n- 45 % de motos/Jakarta\n- Période de pointe : le soir\n\n🗺️ Livrables : Cartes QGIS (volumes, dominance, périodes, flux), rapport PDF.",
+        image: "../Images/Projet_1.png",
+        technologies: ["QGIS", "KoboToolbox", "KoboCollect", "Excel"],
+        lien: "https://github.com/mady2722/Analyse-Trafic-Routier",
+        images: ["../Images/Carte_de_volume.jpg","../Images/Carte_de_dominace.jpg","../Images/Volume_de_trafic_dominant_par_periode_de_le_journee.png","../Images/Carte_de_flux.png","../Images/Repartition_des_taux_par_carrefour.png","../Images/Repartition_du_trafic_routier_par_type_de_vehicule_et_par_carrefour.png"]
+    },
+    {
+        titre: "Analyse des facteurs d'attractivité foncière à Thiès (ACP)",
+        description: "Étude statistique des parcelles de Thiès par ACP",
+        apercuDescription: "📌 Objectif : Identifier les facteurs influençant la valeur foncière à Thiès.\n\n📋 Méthodologie : Analyse en Composantes Principales (ACP) avec R (FactoMineR).\n\n📊 Résultats :\n- Opposition entre centre urbain (attractif) et périphérie\n- Variables clés : prix/m², distance au centre, voirie, couverture internet\n- Parcelles atypiques identifiées : 38, 85, 60\n\n🗺️ Livrables : Rapport PDF, script R, base CSV, graphiques ACP.",
+        image: "../Images/Projet_2.png",
+        technologies: ["R", "FactoMineR", "ACP"],
+        lien: "https://github.com/mady2722/ACP-Fonciere-Thies",
+        images: ["../Images/hist_prix_m².png","../Images/hist_surface_m².png","../Images/boxplot_titre_foncier.png","../Images/matrice_de_correlation.png","../Images/cercle_de_correlation_cos².png","../Images/biplot_des_individu_et_des_variables.png"]
+    },
+    {
+        titre: "Cartes thématiques de la croissance démographique à Niakhar",
+        description: "Cartographie de la croissance démographique",
+        apercuDescription: "📌 Objectif : Visualiser la répartition spatiale de la croissance démographique dans la zone de Niakhar entre 2004 et 2012.\n\n📋 Méthodologie : Cartographie thématique avec QGIS.\n\n📊 Résultats :\n- Cartes du taux de croissance par zone\n- Identification des zones à forte pression démographique\n\n🗺️ Livrables : Cartes QGIS, rapport PDF.",
+        image: "../Images/Projet_3.png",
+        technologies: ["QGIS", "Cartographie thématique"],
+        lien: "https://github.com/mady2722/carte-niakhar",
+        images: ["../Images/Carte CR de Niakhar.png","../Images/Carte du taux de croissance de la population de niakhar en 2012 _  3.png","../Images/Carte du taux de croissance de la population de niakhar en 2012.png"]
+    },
+    {
+        titre: "Plan RDC – Projet d'architecture (AutoCAD)",
+        description: "Conception d'un plan de rez-de-chaussée pour une habitation",
+        apercuDescription: "📌 Objectif : Réaliser un plan d'architecture fonctionnel pour une habitation.\n\n📋 Méthodologie : Dessin technique avec AutoCAD (couches, cotes, aménagement).\n\n📐 Contenu du plan :\n- Séjour, cuisine, chambres, salle à manger\n- Toilettes, garage, patio\n- Cotations précises et aménagement intérieur",
+        image: "../Images/Projet_4.png",
+        technologies: ["AutoCAD", "Dessin technique", "Architecture"],
+        lien: "https://github.com/mady2722/plan-rdc-autocad",
+        images: ["../Images/Plan_RDC.jpg"]
+    }
+];
+
+// ===== INIT PRINCIPALE =====
+function init() {
+    initLoader();
+    initProjects();
+    initCursor();
+    initParticles();
+    initScrollBar();
+    initTypewriter();
+    initTheme();
+    initBackToTop();
+    initVisitCounter();
+    initCitation();
+    initLanguages();
+    initProgressBars();
+    initNavbar();
+    initContactForm();
+    initMap();
+    initCompteurs();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ===== LOADER =====
+function initLoader() {
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            var loader = document.getElementById('loader');
+            if (loader) loader.classList.add('hidden');
+        }, 2000);
+    });
+}
+
+// ===== PROJETS =====
+function initProjects() {
+    const container = document.getElementById('projets-container');
+    if (!container) return;
+    projets.forEach((p, index) => {
+        const badges = p.technologies.map(t => `<span class="badge">${t}</span>`).join('');
+        container.innerHTML += `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="projet-card">
+                    <div class="projet-img-wrapper">
+                        <img src="${p.image}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200'" alt="Aperçu du projet : ${p.titre}">
+                        <div class="projet-overlay">
+                            <a href="${p.lien}" target="_blank" class="btn btn-light btn-overlay">
+                                <i class="fas fa-external-link-alt me-2"></i>Voir le projet
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">${p.titre}</h5>
+                        <p>${p.description}</p>
+                        <div class="mb-3">${badges}</div>
+                        <button class="btn btn-sm apercu-btn"
+                                data-index="${index}"
+                                aria-label="Voir l'aperçu du projet : ${p.titre}"
+                                style="border:1px solid #1abc9c;color:#1abc9c;background:transparent;border-radius:20px;padding:4px 12px;font-size:0.8rem;">
+                            <i class="fas fa-eye me-1" aria-hidden="true"></i> Aperçu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    document.querySelectorAll('.apercu-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const p = projets[parseInt(this.getAttribute('data-index'))];
+            if (p) ouvrirApercu(p.titre, p.apercuDescription, p.image, p.technologies, p.images);
+        });
+    });
+}
+
+// ===== APERÇU POPUP =====
+function ouvrirApercu(titre, description, image, technologies, imagesListe) {
+    document.getElementById('apercuTitre').innerText = titre;
+    document.getElementById('apercuDescription').innerText = description;
+    document.getElementById('apercuImage').src = image;
+    const miniContainer = document.getElementById('apercuMiniatures');
+    if (miniContainer && imagesListe && imagesListe.length) {
+        miniContainer.innerHTML = '';
+        imagesListe.forEach(img => {
+            const thumb = document.createElement('img');
+            thumb.src = img;
+            thumb.alt = 'Miniature ' + titre;
+            thumb.style.cssText = 'width:100%;height:auto;cursor:pointer;border-radius:8px;border:2px solid transparent;';
+            thumb.onclick = () => ouvrirZoom(img);
+            miniContainer.appendChild(thumb);
+        });
+    }
+    const techContainer = document.getElementById('apercuTech');
+    if (techContainer) {
+        techContainer.innerHTML = '';
+        technologies.forEach(tech => {
+            const span = document.createElement('span');
+            span.textContent = tech;
+            techContainer.appendChild(span);
+        });
+    }
+    document.getElementById('apercuPopup').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function fermerApercu() {
+    document.getElementById('apercuPopup').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const popup = document.getElementById('apercuPopup');
+    if (popup) popup.addEventListener('click', function(e) { if (e.target === this) fermerApercu(); });
+});
+
+// ===== ZOOM =====
+// ===== LIGHTBOX ZOOM =====
+let zoomImages = [];
+let zoomIndex = 0;
+
+function ouvrirZoom(src) {
+    const miniatures = document.querySelectorAll('#apercuMiniatures img');
+    zoomImages = Array.from(miniatures).map(img => img.src);
+    zoomIndex = zoomImages.indexOf(src);
+    if (zoomIndex === -1) zoomIndex = 0;
+    afficherImageZoom();
+    document.getElementById('zoomModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function afficherImageZoom() {
+    const img = document.getElementById('zoomImage');
+    const counter = document.getElementById('zoomCounter');
+    img.style.opacity = '0';
+    setTimeout(() => {
+        img.src = zoomImages[zoomIndex];
+        img.style.opacity = '1';
+    }, 150);
+    if (counter) counter.textContent = (zoomIndex + 1) + ' / ' + zoomImages.length;
+    document.querySelector('.zoom-prev').style.display = zoomImages.length > 1 ? 'block' : 'none';
+    document.querySelector('.zoom-next').style.display = zoomImages.length > 1 ? 'block' : 'none';
+}
+
+function naviguerZoom(direction) {
+    zoomIndex = (zoomIndex + direction + zoomImages.length) % zoomImages.length;
+    afficherImageZoom();
+}
+
+function fermerZoom() {
+    document.getElementById('zoomModal').style.display = 'none';
+    document.body.style.overflow = '';
+    zoomImages = [];
+    zoomIndex = 0;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const zm = document.getElementById('zoomModal');
+    if (zm) zm.addEventListener('click', function(e) { if (e.target === this) fermerZoom(); });
+});
+
+// Navigation clavier
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('zoomModal');
+    if (modal && modal.style.display === 'flex') {
+        if (e.key === 'ArrowLeft') naviguerZoom(-1);
+        else if (e.key === 'ArrowRight') naviguerZoom(1);
+        else if (e.key === 'Escape') fermerZoom();
+    } else if (e.key === 'Escape') {
+        fermerApercu();
+    }
+});
+
+// ===== CURSEUR =====
+function initCursor() {
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursor-follower');
+    if (!cursor || !follower) return;
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        setTimeout(() => {
+            follower.style.left = e.clientX + 'px';
+            follower.style.top = e.clientY + 'px';
+        }, 80);
+    });
+    document.querySelectorAll('a, button').forEach(el => {
+        el.addEventListener('mouseenter', () => { cursor.classList.add('cursor-hover'); follower.classList.add('cursor-hover'); });
+        el.addEventListener('mouseleave', () => { cursor.classList.remove('cursor-hover'); follower.classList.remove('cursor-hover'); });
+    });
+}
+
+// ===== PARTICULES =====
+function initParticles() {
+    const canvas = document.getElementById('particles-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const particles = [];
+    for (let i = 0; i < 60; i++) {
+        particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, radius: Math.random()*3+1, speedX: (Math.random()-0.5)*0.5, speedY: (Math.random()-0.5)*0.5, opacity: Math.random()*0.5+0.1 });
+    }
+    let animId;
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.speedX; p.y += p.speedY;
+            if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(255,255,255,${p.opacity})`; ctx.fill();
+        });
+        particles.forEach((p1, i) => {
+            particles.slice(i+1).forEach(p2 => {
+                const dist = Math.hypot(p1.x-p2.x, p1.y-p2.y);
+                if (dist < 120) { ctx.beginPath(); ctx.strokeStyle = `rgba(255,255,255,${0.1*(1-dist/120)})`; ctx.lineWidth = 0.5; ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+            });
+        });
+        animId = requestAnimationFrame(animate);
+    }
+    animate();
+    // Pause quand onglet caché
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelAnimationFrame(animId);
+        else animate();
+    });
+    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+}
+
+// ===== BARRE DE SCROLL =====
+function initScrollBar() {
+    const bar = document.getElementById('scroll-progress');
+    if (!bar) return;
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        bar.style.width = (scrollTop / docHeight * 100) + '%';
+    });
+}
+
+// ===== TYPEWRITER =====
+function initTypewriter() {
+    const el = document.getElementById('typewriter');
+    if (!el) return;
+    const phrases = ["Géomaticienne en devenir", "Développeuse web junior", "Passionnée de cartographie", "Analyste de données spatiales"];
+    let phraseIndex = 0, charIndex = 0, deleting = false;
+    history.scrollRestoration = 'manual';
+    // Retour en haut au rafraîchissement
+    window.addEventListener('beforeunload', () => {
+        window.scrollTo(0, 0);
+    });
+    function type() {
+        const current = phrases[phraseIndex];
+        if (!deleting) {
+            el.textContent = current.slice(0, charIndex + 1); charIndex++;
+            if (charIndex === current.length) { deleting = true; setTimeout(type, 1800); return; }
+        } else {
+            el.textContent = current.slice(0, charIndex - 1); charIndex--;
+            if (charIndex === 0) { deleting = false; phraseIndex = (phraseIndex + 1) % phrases.length; }
+        }
+        setTimeout(type, deleting ? 60 : 90);
+    }
+    setTimeout(type, 500);
+}
+
+// ===== THÈME SOMBRE =====
+function initTheme() {
+    const btn = document.getElementById('themeToggleBtn');
+    if (!btn) return;
+    // Toujours mode clair au chargement
+    document.body.classList.remove('dark-mode');
+    localStorage.removeItem('theme');
+    btn.innerHTML = '<i class="fas fa-moon"></i>';
+    supprimerPointsBrillants();
+
+    btn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        btn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        if (isDark) creerPointsBrillants(); else supprimerPointsBrillants();
+    });
+}
+
+function creerPointsBrillants() {
+    supprimerPointsBrillants();
+    const container = document.createElement('div');
+    container.id = 'etoiles-container';
+    document.body.appendChild(container);
+    for (let i = 0; i < 80; i++) {
+        const point = document.createElement('div');
+        point.className = 'point-brillant';
+        const taille = Math.random() * 3 + 1;
+        point.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${taille}px;height:${taille}px;background:white;animation:briller ${Math.random()*4+3}s infinite alternate;animation-delay:${Math.random()*5}s;`;
+        container.appendChild(point);
+    }
+}
+
+function supprimerPointsBrillants() {
+    const c = document.getElementById('etoiles-container');
+    if (c) c.remove();
+}
+
+// ===== BOUTON RETOUR EN HAUT =====
+function initBackToTop() {
+    const btn = document.getElementById('backToTop');
+    if (!btn) return;
+    window.addEventListener('scroll', () => btn.classList.toggle('visible', window.scrollY > 400));
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
+
+// ===== RETOUR EN HAUT AU RAFRAÎCHISSEMENT =====
+history.scrollRestoration = 'manual';
+window.addEventListener('beforeunload', () => {
+    window.scrollTo(0, 0);
+});
+
+// ===== COMPTEUR DE VISITES =====
+function initVisitCounter() {
+    let v = parseInt(localStorage.getItem('visites') || '0') + 1;
+    localStorage.setItem('visites', v);
+    const el = document.getElementById('compteur');
+    if (el) el.innerText = v;
+}
+
+// ===== CITATION =====
+function initCitation() {
+    const citations = [
+        "Les données géospatiales racontent l'histoire des territoires.",
+        "Cartographier, c'est donner une voix à l'espace.",
+        "Le code est la langue des cartes modernes.",
+        "Une carte vaut mille données brutes.",
+        "La géomatique, c'est l'art de faire parler les territoires.",
+        "Derrière chaque carte, il y a une histoire à découvrir.",
+        "L'information territoriale éclaire les décisions de demain.",
+        "Du terrain au numérique, la géomatique construit des ponts.",
+        "Visualiser les données, c'est rendre l'invisible visible.",
+        "Thiès, Dakar, le Sénégal : des territoires à explorer."
+    ];
+    let index = (new Date().getDate() - 1) % citations.length;
+    const el = document.getElementById('citation');
+    if (!el) return;
+    el.textContent = `"${citations[index]}"`;
+    setInterval(() => {
+        el.style.opacity = '0';
+        setTimeout(() => {
+            index = (index + 1) % citations.length;
+            el.textContent = `"${citations[index]}"`;
+            el.style.opacity = '1';
+        }, 500);
+    }, 15000);
+}
+
+// ===== LANGUES =====
+function initLanguages() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const fill = entry.target.querySelector('.progress-bar-fill');
+                if (fill) fill.style.width = fill.getAttribute('data-level') + '%';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.langue-card').forEach(card => observer.observe(card));
+}
+
+// ===== BARRES DE PROGRESSION =====
+function initProgressBars() {
+    document.querySelectorAll('.progress-bar').forEach(bar => {
+        const w = bar.getAttribute('data-width');
+        if (w) bar.style.width = w + '%';
+    });
+}
+
+// ===== NAVBAR ACTIF =====
+function initNavbar() {
+    function detectSection() {
+        const sections = ['accueil','a-propos','projets','competences','experience','centres-interet','contact'];
+        let current = 'accueil';
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                const rect = el.getBoundingClientRect();
+                if (rect.top <= 200 && rect.bottom >= 100) current = id;
+            }
+        });
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        const active = document.querySelector(`.nav-link[href="#${current}"]`);
+        if (active) active.classList.add('active');
+    }
+    window.addEventListener('scroll', detectSection);
+    detectSection();
+}
+
+// ===== FORMULAIRE CONTACT =====
+function initContactForm() {
+    const form = document.getElementById('contact-form');
+    const notif = document.getElementById('form-notification');
+    if (!form || !notif) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const prenom = document.getElementById('prenom').value.trim();
+        const nom = document.getElementById('nom').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const raison = document.getElementById('raison').value;
+        const message = document.getElementById('message').value.trim();
+
+        let erreur = '';
+        if (!prenom) erreur += 'Prénom requis. ';
+        if (!nom) erreur += 'Nom requis. ';
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) erreur += 'Email invalide. ';
+        if (!raison) erreur += 'Raison requise. ';
+
+        if (erreur) {
+            notif.style.cssText = 'display:block;background:#fdecea;color:#c0392b;border:1px solid #e74c3c;padding:10px 15px;border-radius:10px;margin-top:10px;font-size:0.85rem;';
+            notif.textContent = '❌ ' + erreur;
+            setTimeout(() => { notif.style.display = 'none'; }, 5000);
+            return;
+        }
+
+        notif.style.cssText = 'display:block;background:#fff3cd;color:#856404;border:1px solid #ffc107;padding:10px 15px;border-radius:10px;margin-top:10px;font-size:0.85rem;';
+        notif.textContent = '⏳ Envoi en cours...';
+
+        const data = {
+            access_key: 'a43f07b0-7a8f-436f-816a-ae26e2bae72a',
+            name: prenom + ' ' + nom,
+            email: email,
+            subject: 'Portfolio - ' + raison,
+            message: message || '(Aucun message)',
+            from_name: 'Portfolio Madina Tall'
+        };
+
+        fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                notif.style.cssText = 'display:block;background:#eafaf1;color:#1e8449;border:1px solid #1abc9c;padding:10px 15px;border-radius:10px;margin-top:10px;font-size:0.85rem;';
+                notif.textContent = `✅ Message envoyé ! Merci ${prenom} de m'avoir contactée.`;
+                form.reset();
+            } else {
+                notif.style.cssText = 'display:block;background:#fdecea;color:#c0392b;border:1px solid #e74c3c;padding:10px 15px;border-radius:10px;margin-top:10px;font-size:0.85rem;';
+                notif.textContent = '❌ Erreur lors de l\'envoi. Réessayez plus tard.';
+            }
+        })
+        .catch(() => {
+            notif.style.cssText = 'display:block;background:#fdecea;color:#c0392b;border:1px solid #e74c3c;padding:10px 15px;border-radius:10px;margin-top:10px;font-size:0.85rem;';
+            notif.textContent = '❌ Erreur de connexion. Vérifiez votre internet.';
+        })
+        .finally(() => {
+            setTimeout(() => { notif.style.display = 'none'; }, 5000);
+        });
+    });
+}
+// ===== CARTE =====
+function initMap() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+    setTimeout(() => {
+        try {
+            var map = L.map('map').setView([14.7911, -16.935], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+            L.marker([14.7911, -16.935]).addTo(map).bindPopup('📍 Thiès, Sénégal').openPopup();
+        } catch(e) { console.log('Erreur carte:', e); }
+    }, 500);
+}
+
+// ===== COMPTEURS ACCUEIL =====
+function initCompteurs() {
+    setTimeout(function() {
+        const nbProjets = projets.length;
+        const nbCompetences = document.querySelectorAll('.logiciel-item').length;
+        const nbExperiences = document.querySelectorAll('.exp-card').length;
+        function animerCompteur(el, cible) {
+            if (!el) return;
+            let actuel = 0;
+            el.textContent = '0';
+            const interval = setInterval(() => {
+                actuel += cible / 50;
+                if (actuel >= cible) { el.textContent = cible; clearInterval(interval); }
+                else el.textContent = Math.floor(actuel);
+            }, 30);
+        }
+        animerCompteur(document.getElementById('compteur-projets'), nbProjets);
+        animerCompteur(document.getElementById('compteur-competences'), nbCompetences);
+        animerCompteur(document.getElementById('compteur-experiences'), nbExperiences);
+    }, 500);
+}
+
+// ===== FERMETURE ECHAP =====
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { fermerApercu(); fermerZoom(); }
+});
+// ===== TRADUCTION =====
+function toggleTranslateMenu() {
+    document.getElementById('translateMenu').classList.toggle('open');
+}
+
+function traduire(lang) {
+    const url = `https://translate.google.com/translate?sl=fr&tl=${lang}&u=${encodeURIComponent(window.location.href)}`;
+    window.open(url, '_blank');
+    document.getElementById('translateMenu').classList.remove('open');
+}
+
+// Fermer menu si clic ailleurs
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('translateMenu');
+    if (menu && !e.target.closest('.translate-btn')) {
+        menu.classList.remove('open');
+    }
+});
+</script>
+</body>
+</html>
